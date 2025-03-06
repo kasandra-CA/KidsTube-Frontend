@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const videoList = document.getElementById("video-list");
     const videoForm = document.getElementById("video-form");
 
-    const backendURL = "http://localhost:3000/api"; // Asegúrate de que el backend esté corriendo en este puerto
+    const backendURL = "http://localhost:3000/api";
 
     // Cargar videos al inicio
     const loadVideos = async () => {
@@ -133,3 +133,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadVideos();
 });
+
