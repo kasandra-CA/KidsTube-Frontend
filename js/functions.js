@@ -4,18 +4,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const backendURL = "http://localhost:3000/api";
 
-    // Cargar videos al inicio
+    let editingVideoId = null; // 🟢 Variable para saber si estamos editando
+
+    // 🛠 Función para convertir cualquier URL de YouTube al formato embed
+    const convertToEmbedURL = (url) => {
+        const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/;
+        const match = url.match(regex);
+        if (match) {
+            return `https://www.youtube.com/embed/${match[1]}`;
+        }
+        return url; // Si no es una URL válida de YouTube, se mantiene igual
+    };
+
+    // 🔄 Función para cargar videos correctamente
     const loadVideos = async () => {
         try {
             const response = await fetch(`${backendURL}/videos`);
             const videos = await response.json();
 
-            videoList.innerHTML = "";
+            videoList.innerHTML = ""; // ✅ LIMPIA la lista antes de renderizar
+
             videos.forEach(video => {
+                let videoUrl = convertToEmbedURL(video.url); // 🔄 Asegurar que se muestra en embed
+
                 const videoCard = `
-                    <div class="col-md-4">
+                    <div class="col-md-4 video-card" data-id="${video._id}">
                         <div class="card mb-3">
-                            <iframe class="card-img-top" src="${video.url}" frameborder="0" allowfullscreen></iframe>
+                            <iframe class="card-img-top" width="560" height="315" src="${videoUrl}" title="YouTube video player" frameborder="0" allowfullscreen></iframe>
                             <div class="card-body">
                                 <h5 class="card-title">${video.name}</h5>
                                 <p class="card-text">${video.description}</p>
@@ -32,40 +47,77 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // Función para agregar un nuevo video
-    const addVideo = async (event) => {
+    // 🔄 Función para manejar la creación/edición de videos
+    videoForm.onsubmit = async (event) => {
         event.preventDefault();
 
         const name = document.getElementById("name").value;
-        const url = document.getElementById("url").value;
+        let url = document.getElementById("url").value;
         const description = document.getElementById("description").value;
 
-        try {
-            const response = await fetch(`${backendURL}/videos`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ name, url, description })
-            });
+        url = convertToEmbedURL(url); // 🔄 Convertir la URL antes de enviarla
 
-            if (response.ok) {
-                alert("✅ Video agregado con éxito");
-                videoForm.reset();
-                loadVideos(); // Recargar la lista de videos
-            } else {
-                const errorData = await response.json();
-                alert(`❌ Error: ${errorData.error}`);
+        if (editingVideoId) {
+            // 🟢 MODO EDICIÓN (Actualizar un video existente)
+            try {
+                const response = await fetch(`${backendURL}/videos/${editingVideoId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, url, description })
+                });
+
+                if (response.ok) {
+                    alert("✅ Video actualizado con éxito");
+                    resetForm(); // 🔄 Restaurar el formulario
+                    loadVideos(); // 🔄 Recargar lista
+                } else {
+                    const errorData = await response.json();
+                    alert(`❌ Error: ${errorData.error}`);
+                }
+            } catch (error) {
+                console.error("Error al actualizar video:", error);
             }
-        } catch (error) {
-            console.error("Error al agregar video:", error);
+        } else {
+            // 🆕 MODO CREACIÓN (Agregar nuevo video)
+            try {
+                const response = await fetch(`${backendURL}/videos`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, url, description })
+                });
+
+                if (response.ok) {
+                    alert("✅ Video agregado con éxito");
+                    resetForm();
+                    loadVideos();
+                } else {
+                    const errorData = await response.json();
+                    alert(`❌ Error: ${errorData.error}`);
+                }
+            } catch (error) {
+                console.error("Error al agregar video:", error);
+            }
         }
     };
 
-    // Asignar la función addVideo al evento submit del formulario
-    videoForm.addEventListener("submit", addVideo);
+    // 🛑 Función para iniciar la edición de un video
+    window.editVideo = async (id) => {
+        try {
+            const response = await fetch(`${backendURL}/videos/${id}`);
+            const video = await response.json();
 
-    // Función para eliminar un video
+            // Llenar el formulario con los datos del video a editar
+            document.getElementById("name").value = video.name;
+            document.getElementById("url").value = convertToEmbedURL(video.url); // 🔄 Convertir al formato embed
+            document.getElementById("description").value = video.description;
+
+            editingVideoId = id; // 🟢 Activar modo edición
+        } catch (error) {
+            console.error("Error al cargar video para editar:", error);
+        }
+    };
+
+    // 🗑 Función para eliminar un video
     window.deleteVideo = async (id) => {
         try {
             const response = await fetch(`${backendURL}/videos/${id}`, {
@@ -74,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (response.ok) {
                 alert("✅ Video eliminado con éxito");
-                loadVideos(); // Recargar la lista de videos
+                loadVideos();
             } else {
                 const errorData = await response.json();
                 alert(`❌ Error: ${errorData.error}`);
@@ -84,53 +136,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // Función para editar un video
-    window.editVideo = async (id) => {
-        try {
-            const response = await fetch(`${backendURL}/videos/${id}`);
-            const video = await response.json();
-
-            document.getElementById("name").value = video.name;
-            document.getElementById("url").value = video.url;
-            document.getElementById("description").value = video.description;
-
-            // Cambiar el comportamiento del formulario para actualizar el video
-            videoForm.onsubmit = async (event) => {
-                event.preventDefault();
-
-                const updatedName = document.getElementById("name").value;
-                const updatedUrl = document.getElementById("url").value;
-                const updatedDescription = document.getElementById("description").value;
-
-                try {
-                    const response = await fetch(`${backendURL}/videos/${id}`, {
-                        method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({ name: updatedName, url: updatedUrl, description: updatedDescription })
-                    });
-
-                    if (response.ok) {
-                        alert("✅ Video actualizado con éxito");
-                        videoForm.reset();
-                        loadVideos(); // Recargar la lista de videos
-
-                        // Restaurar el comportamiento original del formulario
-                        videoForm.onsubmit = addVideo;
-                    } else {
-                        const errorData = await response.json();
-                        alert(`❌ Error: ${errorData.error}`);
-                    }
-                } catch (error) {
-                    console.error("Error al actualizar video:", error);
-                }
-            };
-        } catch (error) {
-            console.error("Error al cargar video para editar:", error);
-        }
+    // 🔄 Función para restaurar el formulario después de editar
+    const resetForm = () => {
+        videoForm.reset();
+        editingVideoId = null; // 🛑 Desactivar modo edición
     };
 
-    loadVideos();
+    loadVideos(); // Cargar videos al inicio
 });
-
