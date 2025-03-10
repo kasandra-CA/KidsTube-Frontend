@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pantalla de Inicio - KidsTube</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center text-danger">👤 Selecciona un usuario</h2>
+        
+        <div class="row mt-4" id="user-list">
+            <!-- Aquí se cargarán los avatares dinámicamente -->
+        </div>
+
+        <div class="text-center mt-4">
+            <button class="btn btn-primary" onclick="openAdmin()">🔧 Administración</button>
+        </div>
+    </div>
+
+    <!-- Modal de autenticación por PIN -->
+    <div class="modal fade" id="pinModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">🔐 Ingresa tu PIN</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="password" id="pinInput" class="form-control" placeholder="Ingrese su PIN" maxlength="6">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" onclick="validatePIN()">Ingresar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/authFunctions.js"></script>
+</body>
+</html>
