@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const registerForm = document.getElementById("register-form");
     const loginForm = document.getElementById("login-form");
     const backendURL = "http://localhost:3000/api";
+    const userList = document.getElementById("user-list");
 
     if (registerForm) {
         registerForm.addEventListener("submit", async (event) => {
@@ -42,13 +43,18 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-     // Cargar usuarios restringidos
-     const loadUsers = async () => {
+    // Cargar usuarios restringidos
+    const loadUsers = async () => {
         try {
+            if (!userList) {
+                console.error("❌ Error: No se encontró el elemento con id 'user-list'. Verifica tu HTML.");
+                return;
+            }
+
             const response = await fetch(`${backendURL}/users`);
             const users = await response.json();
 
-            userList.innerHTML = ""; // Limpiar antes de renderizar
+            userList.innerHTML = ""; // ✅ Limpiar antes de renderizar
             users.forEach(user => {
                 const userCard = `
                     <div class="col-md-3 text-center">
@@ -93,5 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    loadUsers();
+    if (userList) {
+        loadUsers();
+    }
 });
