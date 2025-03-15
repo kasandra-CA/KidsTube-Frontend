@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (result.token) {
                 localStorage.setItem("token", result.token);
                 alert("Login exitoso");
-                window.location.href = "home.html";
+                window.location.href = "inicio.html";
             } else {
                 alert(result.error);
             }
