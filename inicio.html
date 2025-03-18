@@ -19,20 +19,20 @@
         </div>
     </div>
 
-    <!-- Modal de autenticación por PIN -->
-    <div class="modal fade" id="pinModal" tabindex="-1">
+    <!-- Modal de autenticación por PIN para Administración -->
+    <div class="modal fade" id="adminPinModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">🔐 Ingresa tu PIN</h5>
+                    <h5 class="modal-title">🔐 Ingresa tu PIN de Administrador</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="password" id="pinInput" class="form-control" placeholder="Ingrese su PIN" maxlength="6">
+                    <input type="password" id="adminPinInput" class="form-control" placeholder="Ingrese su PIN" maxlength="6">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success" onclick="validatePIN()">Ingresar</button>
+                    <button type="button" class="btn btn-success" onclick="validateAdminPIN()">Ingresar</button>
                 </div>
             </div>
         </div>
@@ -40,5 +40,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/authFunctions.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            loadUsers();
+        });
+
+        function openAdmin() {
+            new bootstrap.Modal(document.getElementById("adminPinModal")).show();
+        }
+    </script>
 </body>
 </html>
