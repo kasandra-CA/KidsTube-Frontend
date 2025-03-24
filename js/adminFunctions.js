@@ -5,7 +5,8 @@ let currentUserId = null;
 
 async function loadRestrictedUsers() {
     try {
-        const response = await fetch(`${backendURL}/restricted-users`);
+        const ownerId = localStorage.getItem("userId");
+        const response = await fetch(`${backendURL}/restricted-users?owner=${ownerId}`);
         const users = await response.json();
         const userList = document.getElementById("restricted-users-list");
         userList.innerHTML = "";
@@ -91,7 +92,8 @@ async function saveUser() {
         return;
     }
 
-    const payload = { name, pin, avatar };
+    const owner = localStorage.getItem("userId");
+    const payload = { name, pin, avatar, owner };
     const method = currentUserId ? "PUT" : "POST";
     const url = currentUserId ? `${backendURL}/restricted-users/${currentUserId}` : `${backendURL}/restricted-users`;
     console.log("➡️ Enviando datos:", payload);

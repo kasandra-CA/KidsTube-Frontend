@@ -36,6 +36,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const result = await response.json();
             if (result.token) {
                 localStorage.setItem("token", result.token);
+                localStorage.setItem("userId", result.user._id);
+                localStorage.setItem("userName", result.user.firstName);
                 alert("Login exitoso");
                 window.location.href = "inicio.html";
             } else {
@@ -44,37 +46,57 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ✅ Cargar usuarios restringidos y hacerlo accesible globalmente
+    // ✅ Cargar solo el usuario logueado y sus usuarios restringidos
     window.loadUsers = async () => {
+        const userList = document.getElementById("user-list");
+        if (!userList) return;
+
+        userList.innerHTML = "";
+
+        const userName = localStorage.getItem("userName");
+        const userId = localStorage.getItem("userId");
+
+        // Mostrar usuario adulto logueado
+        if (userName && userId) {
+            const mainUserCard = `
+                <div class="col-md-3 text-center">
+                    <img src="https://ui-avatars.com/api/?name=${userName}" class="rounded-circle" width="100">
+                    <h5>${userName}</h5>
+                    <button class="btn btn-secondary mt-2" onclick="openUser('${userId}')">Ingresar</button>
+                </div>
+            `;
+            userList.innerHTML += mainUserCard;
+        }
+
+        // Mostrar usuarios restringidos asociados a ese adulto
         try {
-            if (!userList) {
-                console.error("❌ Error: No se encontró el elemento con id 'user-list'. Verifica tu HTML.");
-                return;
-            }
+            const response = await fetch(`${backendURL}/restricted-users?owner=${userId}`);
+            const restrictedUsers = await response.json();
 
-            const response = await fetch(`${backendURL}/users`);
-            const users = await response.json();
-
-            userList.innerHTML = ""; // ✅ Limpiar antes de renderizar
-            users.forEach(user => {
+            restrictedUsers.forEach(user => {
                 const userCard = `
                     <div class="col-md-3 text-center">
-                        <img src="https://ui-avatars.com/api/?name=${user.firstName}" class="rounded-circle" width="100">
-                        <h5>${user.firstName}</h5>
-                        <button class="btn btn-secondary mt-2" onclick="openUser('${user._id}')">Ingresar</button>
+                        <img src="images/avatars/${user.avatar}" class="rounded-circle" width="100">
+                        <h5>${user.name}</h5>
+                        <button class="btn btn-secondary mt-2" onclick="openRestrictedUser('${user._id}')">Ingresar</button>
                     </div>
                 `;
                 userList.innerHTML += userCard;
             });
         } catch (error) {
-            console.error("Error cargando usuarios:", error);
+            console.error("Error cargando usuarios restringidos:", error);
         }
     };
 
-    // Abrir modal de PIN al seleccionar usuario
+    // Abrir modal de PIN al seleccionar usuario adulto
     window.openUser = (userId) => {
         selectedUser = userId;
         new bootstrap.Modal(document.getElementById('pinModal')).show();
+    };
+
+    // Ingresar directamente como usuario restringido
+    window.openRestrictedUser = (userId) => {
+        window.location.href = `playlist.html?restrictedUser=${userId}`;
     };
 
     // Validar PIN de usuario restringido
@@ -100,18 +122,18 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // ✅ Validar PIN de administrador y redirigir
+    // Validar PIN de administrador
     window.validateAdminPIN = async () => {
         const pin = document.getElementById("adminPinInput").value;
-        console.log("PIN que se está enviando:", pin); // Para debug
-    
+        console.log("PIN que se está enviando:", pin);
+
         try {
             const response = await fetch("http://localhost:3000/api/validate-admin-pin", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ pin })
             });
-    
+
             const result = await response.json();
             if (response.ok) {
                 alert(result.message);
@@ -122,5 +144,5 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
             console.error("Error validando PIN de admin:", error);
         }
-    };    
+    };
 });
