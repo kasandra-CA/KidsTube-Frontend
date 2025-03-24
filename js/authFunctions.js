@@ -125,6 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Validar PIN de administrador
     window.validateAdminPIN = async () => {
         const pin = document.getElementById("adminPinInput").value;
+        const targetPage = localStorage.getItem("adminTarget");
         console.log("PIN que se está enviando:", pin);
 
         try {
@@ -137,7 +138,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const result = await response.json();
             if (response.ok) {
                 alert(result.message);
-                window.location.href = "adminUsers.html";
+                if (targetPage === "users") {
+                    window.location.href = "adminUsers.html";
+                } else if (targetPage === "playlists") {
+                    window.location.href = "adminPlaylists.html";
+                }
             } else {
                 alert(result.error || "PIN incorrecto.");
             }
