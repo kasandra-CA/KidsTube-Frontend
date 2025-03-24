@@ -2,7 +2,6 @@
 
 const backendURL = "http://localhost:3000/api";
 let currentUserId = null;
-let selectedAvatar = null;
 
 async function loadRestrictedUsers() {
     try {
@@ -35,7 +34,11 @@ function openAddUserModal() {
     document.getElementById("userId").value = "";
     document.getElementById("userName").value = "";
     document.getElementById("userPin").value = "";
-    document.getElementById("userAvatar").value = "avatar1.jpg";
+
+    const defaultAvatar = "avatar1.png";
+    document.getElementById("userAvatar").value = defaultAvatar;
+    renderAvatarSelector(defaultAvatar);
+
     new bootstrap.Modal(document.getElementById("userModal")).show();
 }
 
@@ -46,7 +49,36 @@ function editUser(id, name, pin, avatar) {
     document.getElementById("userName").value = name;
     document.getElementById("userPin").value = pin;
     document.getElementById("userAvatar").value = avatar;
+    renderAvatarSelector(avatar);
     new bootstrap.Modal(document.getElementById("userModal")).show();
+}
+
+function renderAvatarSelector(selected = "avatar1.png") {
+    const avatarSelector = document.getElementById("avatarSelector");
+    avatarSelector.innerHTML = "";
+
+    for (let i = 1; i <= 4; i++) {
+        const avatarName = `avatar${i}.png`;
+        const avatarImg = document.createElement("img");
+        avatarImg.src = `images/avatars/${avatarName}`;
+        avatarImg.classList.add("rounded-circle", "m-2", "border", "border-2");
+        avatarImg.style.width = "70px";
+        avatarImg.style.cursor = "pointer";
+        avatarImg.dataset.avatar = avatarName;
+
+        if (avatarName === selected) {
+            avatarImg.classList.add("border-primary");
+        } else {
+            avatarImg.classList.add("border-light");
+        }
+
+        avatarImg.onclick = () => {
+            document.getElementById("userAvatar").value = avatarName;
+            renderAvatarSelector(avatarName);
+        };
+
+        avatarSelector.appendChild(avatarImg);
+    }
 }
 
 async function saveUser() {
