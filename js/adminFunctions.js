@@ -94,6 +94,7 @@ async function saveUser() {
     const payload = { name, pin, avatar };
     const method = currentUserId ? "PUT" : "POST";
     const url = currentUserId ? `${backendURL}/restricted-users/${currentUserId}` : `${backendURL}/restricted-users`;
+    console.log("➡️ Enviando datos:", payload);
 
     try {
         const response = await fetch(url, {
