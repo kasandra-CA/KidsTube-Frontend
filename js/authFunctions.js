@@ -1,4 +1,5 @@
-// functions.js - Agregar lógica de login y registro en el frontend
+// authFunctions.js - Lógica de login, registro y validación de PINs
+
 document.addEventListener("DOMContentLoaded", () => {
     const registerForm = document.getElementById("register-form");
     const loginForm = document.getElementById("login-form");
@@ -43,8 +44,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Cargar usuarios restringidos
-    const loadUsers = async () => {
+    // ✅ Cargar usuarios restringidos y hacerlo accesible globalmente
+    window.loadUsers = async () => {
         try {
             if (!userList) {
                 console.error("❌ Error: No se encontró el elemento con id 'user-list'. Verifica tu HTML.");
@@ -76,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
         new bootstrap.Modal(document.getElementById('pinModal')).show();
     };
 
-    // Validar PIN
+    // Validar PIN de usuario restringido
     window.validatePIN = async () => {
         const pin = document.getElementById("pinInput").value;
 
@@ -99,6 +100,30 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
+    // ✅ Validar PIN de administrador y redirigir
+    window.validateAdminPIN = async () => {
+        const pin = document.getElementById("adminPinInput").value;
+
+        try {
+            const response = await fetch(`${backendURL}/validate-admin-pin`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ pin })
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert("✅ PIN correcto. Redirigiendo a administración...");
+                window.location.href = "adminUsers.html";
+            } else {
+                alert("❌ PIN incorrecto.");
+            }
+        } catch (error) {
+            console.error("Error validando PIN de admin:", error);
+        }
+    };
+
+    // Ejecutar loadUsers si el elemento existe
     if (userList) {
         loadUsers();
     }
