@@ -103,28 +103,24 @@ document.addEventListener("DOMContentLoaded", () => {
     // ✅ Validar PIN de administrador y redirigir
     window.validateAdminPIN = async () => {
         const pin = document.getElementById("adminPinInput").value;
-
+        console.log("PIN que se está enviando:", pin); // Para debug
+    
         try {
-            const response = await fetch(`${backendURL}/validate-admin-pin`, {
+            const response = await fetch("http://localhost:3000/api/validate-admin-pin", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ pin })
             });
-
+    
             const result = await response.json();
             if (response.ok) {
-                alert("✅ PIN correcto. Redirigiendo a administración...");
+                alert(result.message);
                 window.location.href = "adminUsers.html";
             } else {
-                alert("❌ PIN incorrecto.");
+                alert(result.error || "PIN incorrecto.");
             }
         } catch (error) {
             console.error("Error validando PIN de admin:", error);
         }
-    };
-
-    // Ejecutar loadUsers si el elemento existe
-    if (userList) {
-        loadUsers();
-    }
+    };    
 });
