@@ -14,11 +14,19 @@
         </div>
     </nav>
     <div class="container mt-5">
-        <h2 class="text-center text-danger">🎶 Playlists y Videos</h2>
+        <h2 class="text-center text-danger">🎶 Playlists y Videos</h2></br>
 
         <div class="text-end mb-3">
             <button class="btn btn-outline-dark" onclick="window.location.href='inicio.html'">🔙 Regresar</button>
         </div>
+
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-6">
+                <input type="text" class="form-control" id="searchInput"
+                    placeholder="🔍 Buscar video por nombre o descripción">
+            </div>
+        </div>
+        <p id="searchMessage" class="text-center text-muted d-none">Haz clic en un video para verlo 🎥</p>
 
         <p class="text-center text-muted">Haz clic en una lista para ver sus videos 🎬</p>
         <div id="playlists-container" class="row">
