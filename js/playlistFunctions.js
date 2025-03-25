@@ -54,9 +54,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                 `;
             });
 
+            const playlistId = `playlist-${playlist._id}`;
+            const toggleId = `toggle-${playlist._id}`;
+
             section.innerHTML = `
-                <h4 class="text-primary mb-3">📂 ${playlist.name}</h4>
-                <div class="row">
+                <h4 class="text-primary mb-2" style="cursor:pointer;" onclick="toggleVideos('${playlistId}', '${toggleId}')">
+                    📂 ${playlist.name}
+                    <small class="text-muted">(${playlist.videos.length} videos)</small>
+                    <span id="${toggleId}" style="font-size: 1rem;">🔽</span>
+                </h4>
+                <div id="${playlistId}" class="row mb-3" style="display: none;">
                     ${videosHTML}
                 </div>
                 <hr>
@@ -70,6 +77,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 function convertToEmbedURL(url) {
+    if (!url) return null;
+
+    // Si ya es formato embed, lo aceptamos directamente
+    if (url.includes("youtube.com/embed/")) return url;
+
+    // Si es un link normal, lo convertimos
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
     return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+}
+
+function toggleVideos(containerId, iconId) {
+    const container = document.getElementById(containerId);
+    const icon = document.getElementById(iconId);
+
+    const isVisible = container.style.display === "block";
+
+    container.style.display = isVisible ? "none" : "block";
+    icon.textContent = isVisible ? "🔽" : "🔼";
 }
