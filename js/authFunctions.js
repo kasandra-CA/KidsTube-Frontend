@@ -102,18 +102,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // Validar PIN de usuario restringido
     window.validatePIN = async () => {
         const pin = document.getElementById("pinInput").value;
-
+    
         try {
             const response = await fetch(`${backendURL}/validate-pin`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ userId: selectedUser, pin })
             });
-
+    
             const result = await response.json();
             if (response.ok) {
                 alert("✅ Acceso permitido");
-                window.location.href = `playlist.html?user=${selectedUser}`;
+                window.location.href = `playlist.html?restrictedUser=${selectedUser}`; // ✅ corregido
             } else {
                 alert("❌ PIN incorrecto");
             }
@@ -121,6 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Error validando PIN:", error);
         }
     };
+    
 
     // Validar PIN de administrador
     window.validateAdminPIN = async () => {

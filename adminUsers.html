@@ -9,13 +9,12 @@
 <body>
     <div class="container mt-5">
         <h2 class="text-center text-danger">👥 Administrar Usuarios Restringidos</h2>
-        
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <button class="btn btn-outline-dark" onclick="window.location.href='inicio.html'">🔙 Regresar</button>
+            <button class="btn btn-success" onclick="openAddUserModal()">➕ Agregar Usuario</button>
+        </div>
         <div class="row mt-4" id="restricted-users-list">
             <!-- Aquí se mostrarán los usuarios restringidos -->
-        </div>
-
-        <div class="text-center mt-4">
-            <button class="btn btn-success" onclick="openAddUserModal()">➕ Agregar Usuario</button>
         </div>
     </div>
 
