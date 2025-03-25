@@ -17,14 +17,22 @@ async function loadPlaylists() {
         playlistList.innerHTML = "";
 
         playlists.forEach(playlist => {
+            const safeName = playlist.name.replace(/'/g, "\\'");
+            const profileIds = playlist.profiles.map(p => p._id);
+            const videoIds = playlist.videos.map(v => v?._id).filter(Boolean); // Evita errores por undefined/null
+
             const card = document.createElement("div");
             card.className = "col-md-4 mb-3";
             card.innerHTML = `
                 <div class="card p-3 shadow-sm">
                     <h5 class="card-title text-primary">${playlist.name}</h5>
                     <p class="card-text">Perfiles: ${playlist.profiles.map(p => p.name).join(", ")}</p>
+                    <p class="card-text">🎞️ Total de videos: ${playlist.videos.length}</p>
                     <div class="d-flex justify-content-between">
-                        <button class="btn btn-warning btn-sm" onclick="editPlaylist('${playlist._id}', '${playlist.name}', ${JSON.stringify(playlist.profiles.map(p => p._id))}, ${JSON.stringify(playlist.videos.map(v => v._id))})">✏️ Editar</button>
+                        <button class="btn btn-warning btn-sm"
+                            onclick='editPlaylist("${playlist._id}", "${safeName}", ${JSON.stringify(profileIds)}, ${JSON.stringify(videoIds)})'>
+                            ✏️ Editar
+                        </button>
                         <button class="btn btn-danger btn-sm" onclick="deletePlaylist('${playlist._id}')">🗑️ Eliminar</button>
                     </div>
                 </div>
@@ -35,6 +43,7 @@ async function loadPlaylists() {
         console.error("Error cargando playlists:", err);
     }
 }
+
 
 async function loadProfiles() {
     const profilesList = document.getElementById("profilesList");
@@ -83,7 +92,7 @@ async function loadVideos() {
             wrapper.innerHTML = `
                 <div class="card shadow-sm h-100">
                     <iframe class="card-img-top" src="${embedUrl}" frameborder="0"
-                            style="width:100%; height:180px;" allowfullscreen></iframe>
+                            style="width:100%; height:180px;" allowfullscreen loading="lazy"></iframe>
                     <div class="card-body p-2">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="${video._id}" id="video-${video._id}">
@@ -101,6 +110,12 @@ async function loadVideos() {
 }
 
 function convertToEmbedURL(url) {
+    if (!url) return null;
+
+    // Si ya es formato embed, lo aceptamos directamente
+    if (url.includes("youtube.com/embed/")) return url;
+
+    // Si es un link normal, lo convertimos
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
     return match ? `https://www.youtube.com/embed/${match[1]}` : null;
 }

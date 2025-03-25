@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const videoCard = `
                     <div class="col-md-4 video-card" data-id="${video._id}">
                         <div class="card mb-3">
-                            <iframe class="card-img-top" width="560" height="315" src="${videoUrl}" title="YouTube video player" frameborder="0" allowfullscreen></iframe>
+                            <iframe class="card-img-top" width="560" height="315" src="${videoUrl}" title="YouTube video player" frameborder="0" allowfullscreen loading="lazy"></iframe>
                             <div class="card-body">
                                 <h5 class="card-title">${video.name}</h5>
                                 <p class="card-text">${video.description}</p>

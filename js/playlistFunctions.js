@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 videosHTML += `
                     <div class="col-md-4 mb-3">
                         <div class="card">
-                            <iframe class="card-img-top" src="${embedUrl}" frameborder="0" allowfullscreen></iframe>
+                            <iframe class="card-img-top" src="${embedUrl}" frameborder="0" allowfullscreen loading="lazy"></iframe>
                             <div class="card-body">
                                 <h5 class="card-title">${video.name}</h5>
                                 <p class="card-text">${video.description || ''}</p>
