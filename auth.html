@@ -1,36 +1,78 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Autenticación - KidsTube</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #fef6f9;
+        }
+
+        .card {
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-control {
+            border-radius: 0.75rem;
+        }
+
+        h2 {
+            font-weight: bold;
+        }
+    </style>
 </head>
+
 <body>
     <div class="container mt-5">
-        <h2 class="text-center text-danger">Registro</h2>
-        <form id="register-form">
-            <div class="mb-3"><input type="email" name="email" class="form-control" placeholder="Correo Electrónico" required></div>
-            <div class="mb-3"><input type="password" name="password" class="form-control" placeholder="Contraseña" required></div>
-            <div class="mb-3"><input type="password" name="repeatPassword" class="form-control" placeholder="Repetir Contraseña" required></div>
-            <div class="mb-3"><input type="tel" name="phone" class="form-control" placeholder="Número Telefónico" required></div>
-            <div class="mb-3"><input type="text" name="pin" class="form-control" placeholder="PIN (6 dígitos)" required></div>
-            <div class="mb-3"><input type="text" name="firstName" class="form-control" placeholder="Nombre" required></div>
-            <div class="mb-3"><input type="text" name="lastName" class="form-control" placeholder="Apellidos" required></div>
-            <div class="mb-3"><input type="text" name="country" class="form-control" placeholder="País"></div>
-            <div class="mb-3"><input type="date" name="birthdate" class="form-control" required></div>
-            <button type="submit" class="btn btn-danger w-100">Registrarse</button>
-        </form>
+        <div class="row justify-content-center g-4">
+            <!-- Registro -->
+            <div class="col-md-6">
+                <div class="card p-4 bg-white">
+                    <h2 class="text-center text-danger mb-4">📝 Registro</h2>
+                    <form id="register-form">
+                        <div class="mb-3"><input type="email" name="email" class="form-control"
+                                placeholder="📧 Correo Electrónico" required></div>
+                        <div class="mb-3"><input type="password" name="password" class="form-control"
+                                placeholder="🔒 Contraseña" required></div>
+                        <div class="mb-3"><input type="password" name="repeatPassword" class="form-control"
+                                placeholder="🔁 Repetir Contraseña" required></div>
+                        <div class="mb-3"><input type="tel" name="phone" class="form-control"
+                                placeholder="📱 Número Telefónico" required></div>
+                        <div class="mb-3"><input type="text" name="pin" class="form-control"
+                                placeholder="🔢 PIN (6 dígitos)" required></div>
+                        <div class="mb-3"><input type="text" name="firstName" class="form-control"
+                                placeholder="👤 Nombre" required></div>
+                        <div class="mb-3"><input type="text" name="lastName" class="form-control"
+                                placeholder="👥 Apellidos" required></div>
+                        <div class="mb-3"><input type="text" name="country" class="form-control" placeholder="🌍 País">
+                        </div>
+                        <div class="mb-3"><input type="date" name="birthdate" class="form-control" required></div>
+                        <button type="submit" class="btn btn-danger w-100">🎈 Registrarse</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Inicio de sesión -->
+            <div class="col-md-6">
+                <div class="card p-4 bg-white">
+                    <h2 class="text-center text-danger mb-4">🔐 Iniciar Sesión</h2>
+                    <form id="login-form">
+                        <div class="mb-3"><input type="email" name="email" class="form-control"
+                                placeholder="📧 Correo Electrónico" required></div>
+                        <div class="mb-3"><input type="password" name="password" class="form-control"
+                                placeholder="🔒 Contraseña" required></div>
+                        <button type="submit" class="btn btn-danger w-100">🚪 Ingresar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-    <hr>
-    <div class="container mt-3">
-        <h2 class="text-center text-danger">Iniciar Sesión</h2>
-        <form id="login-form">
-            <div class="mb-3"><input type="email" name="email" class="form-control" placeholder="Correo Electrónico" required></div>
-            <div class="mb-3"><input type="password" name="password" class="form-control" placeholder="Contraseña" required></div>
-            <button type="submit" class="btn btn-danger w-100">Ingresar</button>
-        </form>
-    </div>
+
     <script src="js/authFunctions.js"></script>
 </body>
+
 </html>

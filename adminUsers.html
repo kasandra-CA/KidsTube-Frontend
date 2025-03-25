@@ -6,20 +6,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administrar Usuarios Restringidos - KidsTube</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #fff3f7;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        .card {
+            border-radius: 1rem;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .avatar-option {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .avatar-option:hover {
+            transform: scale(1.1);
+            border-color: #198754;
+        }
+
+        .avatar-option.selected {
+            border-color: #198754;
+            box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.25);
+        }
+
+        .modal-content {
+            border-radius: 1rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+        }
+    </style>
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-danger">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-danger shadow">
         <div class="container">
-            <a class="navbar-brand text-white" href="#">KidsTube</a>
+            <a class="navbar-brand text-white" href="#">🎬 KidsTube</a>
         </div>
     </nav>
+
+    <!-- Contenido -->
     <div class="container mt-5">
-        <h2 class="text-center text-danger">👥 Administrar Usuarios Restringidos</h2>
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="text-center text-danger mb-4">👥 Administrar Usuarios Restringidos</h2>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
             <button class="btn btn-outline-dark" onclick="window.location.href='inicio.html'">🔙 Regresar</button>
             <button class="btn btn-success" onclick="openAddUserModal()">➕ Agregar Usuario</button>
         </div>
+
         <div class="row mt-4" id="restricted-users-list">
             <!-- Aquí se mostrarán los usuarios restringidos -->
         </div>
@@ -28,37 +76,38 @@
     <!-- Modal para agregar/editar usuario restringido -->
     <div class="modal fade" id="userModal" tabindex="-1">
         <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title" id="modalTitle">Agregar Usuario</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="userId">
                     <div class="mb-3">
-                        <label class="form-label">Nombre Completo *</label>
+                        <label class="form-label">👤 Nombre Completo *</label>
                         <input type="text" id="userName" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">PIN *</label>
+                        <label class="form-label">🔢 PIN *</label>
                         <input type="password" id="userPin" class="form-control" maxlength="6" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Avatar *</label>
-                        <div class="d-flex justify-content-around flex-wrap" id="avatarSelector">
+                        <label class="form-label">🖼️ Avatar *</label>
+                        <div class="d-flex justify-content-around flex-wrap gap-3" id="avatarSelector">
                             <!-- Avatares se insertan con JS -->
                         </div>
                         <input type="hidden" id="userAvatar" value="avatar1.png">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-success" onclick="saveUser()">Guardar</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/adminFunctions.js"></script>
 </body>
