@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const registerForm = document.getElementById("register-form");
     const loginForm = document.getElementById("login-form");
     const backendURL = "http://localhost:3000/api";
-    const userList = document.getElementById("user-list");
 
     if (registerForm) {
         registerForm.addEventListener("submit", async (event) => {
@@ -46,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ✅ Cargar solo el usuario logueado y sus usuarios restringidos
+    // 🔄 Cargar usuarios
     window.loadUsers = async () => {
         const userList = document.getElementById("user-list");
         if (!userList) return;
@@ -56,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const userName = localStorage.getItem("userName");
         const userId = localStorage.getItem("userId");
 
-        // Mostrar usuario adulto logueado
+        // Usuario adulto logueado
         if (userName && userId) {
             const mainUserCard = `
                 <div class="col-md-3 text-center">
@@ -68,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
             userList.innerHTML += mainUserCard;
         }
 
-        // Mostrar usuarios restringidos asociados a ese adulto
+        // Usuarios restringidos
         try {
             const response = await fetch(`${backendURL}/restricted-users?owner=${userId}`);
             const restrictedUsers = await response.json();
@@ -88,32 +87,24 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // Abrir modal de PIN al seleccionar usuario adulto
+    // 🔐 PIN de usuario administrador
     window.openUser = (userId) => {
         selectedUser = userId;
         new bootstrap.Modal(document.getElementById('pinModal')).show();
     };
 
-    // Ingresar directamente como usuario restringido
-    window.openRestrictedUser = (userId) => {
-        window.location.href = `playlist.html?restrictedUser=${userId}`;
-    };
-
-    // Validar PIN de usuario restringido
     window.validatePIN = async () => {
         const pin = document.getElementById("pinInput").value;
-    
         try {
             const response = await fetch(`${backendURL}/validate-pin`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ userId: selectedUser, pin })
             });
-    
             const result = await response.json();
             if (response.ok) {
                 alert("✅ Acceso permitido");
-                window.location.href = `playlist.html?restrictedUser=${selectedUser}`; // ✅ corregido
+                window.location.href = `playlist.html?restrictedUser=${selectedUser}`;
             } else {
                 alert("❌ PIN incorrecto");
             }
@@ -121,16 +112,14 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Error validando PIN:", error);
         }
     };
-    
 
-    // Validar PIN de administrador
+    // ✅ VALIDAR ADMIN
     window.validateAdminPIN = async () => {
         const pin = document.getElementById("adminPinInput").value;
         const targetPage = localStorage.getItem("adminTarget");
-        console.log("PIN que se está enviando:", pin);
 
         try {
-            const response = await fetch("http://localhost:3000/api/validate-admin-pin", {
+            const response = await fetch(`${backendURL}/validate-admin-pin`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ pin })
@@ -151,4 +140,37 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Error validando PIN de admin:", error);
         }
     };
+
+    // 🔐 NUEVO: PIN para perfil restringido
+    let selectedRestrictedUser = null;
+
+    window.openRestrictedUser = (userId) => {
+        selectedRestrictedUser = userId;
+        new bootstrap.Modal(document.getElementById('pinRestrictedModal')).show();
+    };
+
+    window.validateRestrictedPIN = async () => {
+        const pin = document.getElementById("restrictedPinInput").value;
+
+        try {
+            const response = await fetch(`${backendURL}/validate-restricted-pin`, {
+
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: selectedRestrictedUser, pin })
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert("✅ Acceso permitido");
+                window.location.href = `playlist.html?restrictedUser=${selectedRestrictedUser}`;
+            } else {
+                alert(result.error || "❌ PIN incorrecto");
+            }
+        } catch (error) {
+            console.error("Error validando PIN:", error);
+            alert("❌ Error al validar PIN");
+        }
+    };
 });
+
