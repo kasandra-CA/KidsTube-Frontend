@@ -1,6 +1,17 @@
 const backendURL = "http://localhost:3000/api";
 let currentPlaylistId = null;
 
+function fetchWithToken(url, options = {}) {
+    const token = localStorage.getItem("token");
+    return fetch(url, {
+        ...options,
+        headers: {
+            ...options.headers,
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     loadPlaylists();
     loadProfiles();
@@ -12,14 +23,14 @@ async function loadPlaylists() {
     const ownerId = localStorage.getItem("userId");
 
     try {
-        const response = await fetch(`${backendURL}/playlists?owner=${ownerId}`);
+        const response = await fetchWithToken(`${backendURL}/playlists?owner=${ownerId}`);
         const playlists = await response.json();
         playlistList.innerHTML = "";
 
         playlists.forEach(playlist => {
             const safeName = playlist.name.replace(/'/g, "\\'");
             const profileIds = playlist.profiles.map(p => p._id);
-            const videoIds = playlist.videos.map(v => v?._id).filter(Boolean); // Evita errores por undefined/null
+            const videoIds = playlist.videos.map(v => v?._id).filter(Boolean);
 
             const card = document.createElement("div");
             card.className = "col-md-4 mb-3";
@@ -44,13 +55,12 @@ async function loadPlaylists() {
     }
 }
 
-
 async function loadProfiles() {
     const profilesList = document.getElementById("profilesList");
     const ownerId = localStorage.getItem("userId");
 
     try {
-        const response = await fetch(`${backendURL}/restricted-users?owner=${ownerId}`);
+        const response = await fetchWithToken(`${backendURL}/restricted-users?owner=${ownerId}`);
         const profiles = await response.json();
         profilesList.innerHTML = "";
 
@@ -70,19 +80,14 @@ async function loadProfiles() {
 
 async function loadVideos() {
     const videosList = document.getElementById("videosList");
+    const ownerId = localStorage.getItem("userId");
 
     try {
-        const response = await fetch(`${backendURL}/videos`);
+        const response = await fetchWithToken(`${backendURL}/videos?owner=${ownerId}`);
         const videos = await response.json();
-
-        console.log("Cargando videos...");
-        console.log("Respuesta:", videos);
-
         videosList.innerHTML = "";
 
         videos.forEach(video => {
-            console.log("Renderizando video:", video.name);
-
             const embedUrl = convertToEmbedURL(video.url);
             if (!embedUrl) return;
 
@@ -91,8 +96,7 @@ async function loadVideos() {
 
             wrapper.innerHTML = `
                 <div class="card shadow-sm h-100">
-                    <iframe class="card-img-top" src="${embedUrl}" frameborder="0"
-                            style="width:100%; height:180px;" allowfullscreen loading="lazy"></iframe>
+                    <iframe class="card-img-top" src="${embedUrl}" frameborder="0" style="width:100%; height:180px;" allowfullscreen loading="lazy"></iframe>
                     <div class="card-body p-2">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="${video._id}" id="video-${video._id}">
@@ -101,7 +105,6 @@ async function loadVideos() {
                     </div>
                 </div>
             `;
-
             videosList.appendChild(wrapper);
         });
     } catch (err) {
@@ -111,15 +114,9 @@ async function loadVideos() {
 
 function convertToEmbedURL(url) {
     if (!url) return null;
-
-    // Si ya es formato embed, lo aceptamos directamente
-    if (url.includes("youtube.com/embed/")) return url;
-
-    // Si es un link normal, lo convertimos
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
-    return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+    return match ? `https://www.youtube.com/embed/${match[1]}` : url;
 }
-
 
 function openAddPlaylistModal() {
     currentPlaylistId = null;
@@ -170,7 +167,7 @@ async function savePlaylist() {
     const url = currentPlaylistId ? `${backendURL}/playlists/${currentPlaylistId}` : `${backendURL}/playlists`;
 
     try {
-        const response = await fetch(url, {
+        const response = await fetchWithToken(url, {
             method,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
@@ -193,11 +190,11 @@ async function deletePlaylist(id) {
     if (!confirm("¿Seguro que deseas eliminar esta playlist?")) return;
 
     try {
-        const response = await fetch(`${backendURL}/playlists/${id}`, {
+        const response = await fetchWithToken(`${backendURL}/playlists/${id}`, {
             method: "DELETE"
         });
-        const result = await response.json();
 
+        const result = await response.json();
         if (response.ok) {
             alert(result.message);
             loadPlaylists();

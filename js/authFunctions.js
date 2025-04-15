@@ -5,6 +5,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const loginForm = document.getElementById("login-form");
     const backendURL = "http://localhost:3000/api";
 
+    // 👉 Reutilizable: fetch con token
+    function fetchWithToken(url, options = {}) {
+        const token = localStorage.getItem("token");
+        return fetch(url, {
+            ...options,
+            headers: {
+                ...options.headers,
+                Authorization: `Bearer ${token}`
+            }
+        });
+    }
+
     if (registerForm) {
         registerForm.addEventListener("submit", async (event) => {
             event.preventDefault();
@@ -69,7 +81,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Usuarios restringidos
         try {
-            const response = await fetch(`${backendURL}/restricted-users?owner=${userId}`);
+            const response = await fetchWithToken(`${backendURL}/restricted-users?owner=${userId}`);
+            if (!response.ok) throw new Error("No autorizado");
             const restrictedUsers = await response.json();
 
             restrictedUsers.forEach(user => {
@@ -83,7 +96,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 userList.innerHTML += userCard;
             });
         } catch (error) {
-            console.error("Error cargando usuarios restringidos:", error);
+            console.error("❌ Error cargando usuarios restringidos:", error);
+            userList.innerHTML += `<p class="text-muted text-center">⚠️ No se pudieron cargar los perfiles.</p>`;
         }
     };
 
@@ -103,9 +117,9 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             const result = await response.json();
             if (response.ok) {
-                alert("✅ Acceso permitido");
                 window.location.href = `playlist.html?restrictedUser=${selectedUser}`;
             } else {
+                console.log(result); // 👈 Para depurar
                 alert("❌ PIN incorrecto");
             }
         } catch (error) {
@@ -154,7 +168,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             const response = await fetch(`${backendURL}/validate-restricted-pin`, {
-
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ userId: selectedRestrictedUser, pin })
@@ -162,9 +175,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const result = await response.json();
             if (response.ok) {
-                alert("✅ Acceso permitido");
                 window.location.href = `playlist.html?restrictedUser=${selectedRestrictedUser}`;
             } else {
+                console.log(result); // 👈 Para depurar
                 alert(result.error || "❌ PIN incorrecto");
             }
         } catch (error) {
@@ -173,4 +186,3 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 });
-

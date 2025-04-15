@@ -2,6 +2,17 @@ const backendURL = "http://localhost:3000/api";
 const restrictedUserId = new URLSearchParams(window.location.search).get("restrictedUser");
 const ownerId = localStorage.getItem("userId");
 
+function fetchWithToken(url, options = {}) {
+    const token = localStorage.getItem("token");
+    return fetch(url, {
+        ...options,
+        headers: {
+            ...options.headers,
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     if (!restrictedUserId || !ownerId) {
         alert("Faltan datos para cargar las playlists.");
@@ -9,22 +20,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     try {
-        const response = await fetch(`${backendURL}/playlists?owner=${ownerId}`);
+        const response = await fetchWithToken(`${backendURL}/playlists?owner=${ownerId}`);
         const playlists = await response.json();
 
         const filtered = playlists.filter(p =>
             p.profiles.some(pr => String(pr._id) === String(restrictedUserId))
         );
 
-        renderPlaylists(filtered); // Modo normal
+        renderPlaylists(filtered);
 
         const searchInput = document.getElementById("searchInput");
         searchInput.addEventListener("input", () => {
             const term = searchInput.value.trim().toLowerCase();
             if (term === "") {
-                renderPlaylists(filtered); // Mostrar playlists normalmente
+                renderPlaylists(filtered);
             } else {
-                searchResults(filtered, term); // Modo búsqueda
+                searchResults(filtered, term);
             }
         });
     } catch (error) {
@@ -125,6 +136,7 @@ function searchResults(playlists, term) {
 function convertToEmbedURL(url) {
     if (!url) return null;
     if (url.includes("youtube.com/embed/")) return url;
+    
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
     return match ? `https://www.youtube.com/embed/${match[1]}` : null;
 }

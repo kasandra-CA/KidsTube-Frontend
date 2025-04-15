@@ -1,12 +1,21 @@
-// ✅ Este archivo reemplaza adminFunctions.js con lo necesario para crear, ver, editar y eliminar usuarios restringidos
-
 const backendURL = "http://localhost:3000/api";
 let currentUserId = null;
+
+function fetchWithToken(url, options = {}) {
+    const token = localStorage.getItem("token");
+    return fetch(url, {
+        ...options,
+        headers: {
+            ...options.headers,
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
 
 async function loadRestrictedUsers() {
     try {
         const ownerId = localStorage.getItem("userId");
-        const response = await fetch(`${backendURL}/restricted-users?owner=${ownerId}`);
+        const response = await fetchWithToken(`${backendURL}/restricted-users?owner=${ownerId}`);
         const users = await response.json();
         const userList = document.getElementById("restricted-users-list");
         userList.innerHTML = "";
@@ -35,11 +44,8 @@ function openAddUserModal() {
     document.getElementById("userId").value = "";
     document.getElementById("userName").value = "";
     document.getElementById("userPin").value = "";
-
-    const defaultAvatar = "avatar1.png";
-    document.getElementById("userAvatar").value = defaultAvatar;
-    renderAvatarSelector(defaultAvatar);
-
+    document.getElementById("userAvatar").value = "avatar1.png";
+    renderAvatarSelector("avatar1.png");
     new bootstrap.Modal(document.getElementById("userModal")).show();
 }
 
@@ -96,17 +102,15 @@ async function saveUser() {
     const payload = { name, pin, avatar, owner };
     const method = currentUserId ? "PUT" : "POST";
     const url = currentUserId ? `${backendURL}/restricted-users/${currentUserId}` : `${backendURL}/restricted-users`;
-    console.log("➡️ Enviando datos:", payload);
 
     try {
-        const response = await fetch(url, {
+        const response = await fetchWithToken(url, {
             method,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
 
         const result = await response.json();
-
         if (response.ok) {
             alert(result.message);
             bootstrap.Modal.getInstance(document.getElementById("userModal")).hide();
@@ -124,11 +128,11 @@ async function deleteUser(id) {
     if (!confirm("¿Estás seguro de eliminar este usuario?")) return;
 
     try {
-        const response = await fetch(`${backendURL}/restricted-users/${id}`, {
+        const response = await fetchWithToken(`${backendURL}/restricted-users/${id}`, {
             method: "DELETE"
         });
-        const result = await response.json();
 
+        const result = await response.json();
         if (response.ok) {
             alert(result.message);
             loadRestrictedUsers();
@@ -140,5 +144,4 @@ async function deleteUser(id) {
     }
 }
 
-// Cargar usuarios al iniciar
 loadRestrictedUsers();

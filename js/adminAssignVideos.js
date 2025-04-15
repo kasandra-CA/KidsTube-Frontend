@@ -1,5 +1,15 @@
-// adminAssignVideos.js
 const backendURL = "http://localhost:3000/api";
+
+function fetchWithToken(url, options = {}) {
+    const token = localStorage.getItem("token");
+    return fetch(url, {
+        ...options,
+        headers: {
+            ...options.headers,
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     loadPlaylists();
@@ -13,7 +23,7 @@ async function loadPlaylists() {
     const playlistSelector = document.getElementById("playlistSelector");
 
     try {
-        const res = await fetch(`${backendURL}/playlists?owner=${userId}`);
+        const res = await fetchWithToken(`${backendURL}/playlists?owner=${userId}`);
         const playlists = await res.json();
 
         playlists.forEach(p => {
@@ -29,9 +39,10 @@ async function loadPlaylists() {
 
 async function loadVideos() {
     const videoList = document.getElementById("video-list");
+    const userId = localStorage.getItem("userId");
 
     try {
-        const res = await fetch(`${backendURL}/videos`);
+        const res = await fetchWithToken(`${backendURL}/videos?owner=${userId}`);
         const videos = await res.json();
 
         videos.forEach(video => {
@@ -76,7 +87,7 @@ async function assignVideosToPlaylist(e) {
     }
 
     try {
-        const res = await fetch(`${backendURL}/playlists/add-videos`, {
+        const res = await fetchWithToken(`${backendURL}/playlists/add-videos`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ playlistId, videoIds })

@@ -53,7 +53,13 @@
             <!-- Aquí se cargarán los avatares dinámicamente -->
         </div>
 
-        <div class="d-flex justify-content-center flex-column align-items-center gap-2 mt-5">
+        <!-- 👤 Nombre y botón de logout -->
+        <div class="text-center mt-5">
+            <h5 class="fw-bold text-primary">👋 Hola, <span id="userNameDisplay"></span></h5>
+            <button class="btn btn-outline-danger mt-2" onclick="logout()">🚪 Cerrar sesión</button>
+        </div>
+
+        <div class="d-flex justify-content-center flex-column align-items-center gap-2 mt-4">
             <button class="btn btn-primary btn-admin" onclick="openAdmin('users')">🔧 Administración</button>
             <button class="btn btn-secondary btn-admin" onclick="openAdmin('playlists')">🎵 Gestionar Playlists</button>
         </div>
@@ -68,8 +74,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="password" id="adminPinInput" class="form-control" placeholder="PIN de 6 dígitos"
-                        maxlength="6">
+                    <input type="password" id="adminPinInput" class="form-control" placeholder="PIN de 6 dígitos" maxlength="6">
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -78,37 +83,51 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Modal de PIN para usuarios restringidos -->
-<div class="modal fade" id="pinRestrictedModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content shadow">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">🔐 Ingresar PIN del Perfil</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="password" id="restrictedPinInput" class="form-control" placeholder="PIN de 6 dígitos" maxlength="6">
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button class="btn btn-success" onclick="validateRestrictedPIN()">Ingresar</button>
+    <div class="modal fade" id="pinRestrictedModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">🔐 Ingresar PIN del Perfil</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="password" id="restrictedPinInput" class="form-control" placeholder="PIN de 6 dígitos" maxlength="6">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-success" onclick="validateRestrictedPIN()">Ingresar</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/authCheck.js"></script> <!-- Protección por token -->
     <script src="js/authFunctions.js"></script>
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             loadUsers();
+
+            // Mostrar nombre del usuario
+            const userName = localStorage.getItem("userName");
+            const userNameDisplay = document.getElementById("userNameDisplay");
+            if (userName && userNameDisplay) {
+                userNameDisplay.textContent = userName;
+            }
         });
 
         function openAdmin(target) {
             localStorage.setItem("adminTarget", target);
             new bootstrap.Modal(document.getElementById("adminPinModal")).show();
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "auth.html";
         }
     </script>
 </body>
