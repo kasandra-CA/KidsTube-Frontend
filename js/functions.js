@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const videoForm = document.getElementById("video-form");
 
     const backendURL = "http://localhost:3000/api";
+    const userId = localStorage.getItem("userId"); // 👈 Identificar al usuario logueado
 
     let editingVideoId = null; // 🟢 Variable para saber si estamos editando
 
@@ -13,19 +14,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (match) {
             return `https://www.youtube.com/embed/${match[1]}`;
         }
-        return url; // Si no es una URL válida de YouTube, se mantiene igual
+        return url;
     };
 
     // 🔄 Función para cargar videos correctamente
     const loadVideos = async () => {
         try {
-            const response = await fetch(`${backendURL}/videos`);
+            const response = await fetch(`${backendURL}/videos?owner=${userId}`); // 👈 Solo los del usuario
             const videos = await response.json();
 
-            videoList.innerHTML = ""; // ✅ LIMPIA la lista antes de renderizar
+            videoList.innerHTML = "";
 
             videos.forEach(video => {
-                let videoUrl = convertToEmbedURL(video.url); // 🔄 Asegurar que se muestra en embed
+                let videoUrl = convertToEmbedURL(video.url);
 
                 const videoCard = `
                     <div class="col-md-4 video-card" data-id="${video._id}">
@@ -47,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // 🔄 Función para manejar la creación/edición de videos
+    // 🔄 Crear o editar video
     videoForm.onsubmit = async (event) => {
         event.preventDefault();
 
@@ -55,21 +56,22 @@ document.addEventListener("DOMContentLoaded", () => {
         let url = document.getElementById("url").value;
         const description = document.getElementById("description").value;
 
-        url = convertToEmbedURL(url); // 🔄 Convertir la URL antes de enviarla
+        url = convertToEmbedURL(url);
+        const payload = { name, url, description, owner: userId }; // 👈 Asociar al usuario
 
         if (editingVideoId) {
-            // 🟢 MODO EDICIÓN (Actualizar un video existente)
+            // Editar video
             try {
                 const response = await fetch(`${backendURL}/videos/${editingVideoId}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name, url, description })
+                    body: JSON.stringify(payload)
                 });
 
                 if (response.ok) {
                     alert("✅ Video actualizado con éxito");
-                    resetForm(); // 🔄 Restaurar el formulario
-                    loadVideos(); // 🔄 Recargar lista
+                    resetForm();
+                    loadVideos();
                 } else {
                     const errorData = await response.json();
                     alert(`❌ Error: ${errorData.error}`);
@@ -78,12 +80,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.error("Error al actualizar video:", error);
             }
         } else {
-            // 🆕 MODO CREACIÓN (Agregar nuevo video)
+            // Crear nuevo video
             try {
                 const response = await fetch(`${backendURL}/videos`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name, url, description })
+                    body: JSON.stringify(payload)
                 });
 
                 if (response.ok) {
@@ -100,24 +102,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // 🛑 Función para iniciar la edición de un video
+    // 🛑 Editar video
     window.editVideo = async (id) => {
         try {
             const response = await fetch(`${backendURL}/videos/${id}`);
             const video = await response.json();
 
-            // Llenar el formulario con los datos del video a editar
             document.getElementById("name").value = video.name;
-            document.getElementById("url").value = convertToEmbedURL(video.url); // 🔄 Convertir al formato embed
+            document.getElementById("url").value = convertToEmbedURL(video.url);
             document.getElementById("description").value = video.description;
 
-            editingVideoId = id; // 🟢 Activar modo edición
+            editingVideoId = id;
         } catch (error) {
             console.error("Error al cargar video para editar:", error);
         }
     };
 
-    // 🗑 Función para eliminar un video
+    // 🗑 Eliminar video
     window.deleteVideo = async (id) => {
         try {
             const response = await fetch(`${backendURL}/videos/${id}`, {
@@ -136,11 +137,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // 🔄 Función para restaurar el formulario después de editar
+    // 🔄 Restaurar formulario
     const resetForm = () => {
         videoForm.reset();
-        editingVideoId = null; // 🛑 Desactivar modo edición
+        editingVideoId = null;
     };
 
-    loadVideos(); // Cargar videos al inicio
+    loadVideos();
 });
