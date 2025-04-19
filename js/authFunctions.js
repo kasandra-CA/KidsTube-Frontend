@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // 📝 REGISTRO
     if (registerForm) {
         registerForm.addEventListener("submit", async (event) => {
             event.preventDefault();
@@ -33,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // 🔐 LOGIN + código SMS vía modal
     if (loginForm) {
         loginForm.addEventListener("submit", async (event) => {
             event.preventDefault();
@@ -44,20 +46,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data)
             });
+
             const result = await response.json();
-            if (result.token) {
-                localStorage.setItem("token", result.token);
-                localStorage.setItem("userId", result.user._id);
-                localStorage.setItem("userName", result.user.firstName);
-                alert("Login exitoso");
-                window.location.href = "inicio.html";
+            if (response.ok) {
+                window.smsUserId = result.userId;
+                window.smsUserName = result.user.firstName;
+
+                // Mostrar modal Bootstrap para ingresar el código SMS
+                new bootstrap.Modal(document.getElementById("smsModal")).show();
             } else {
-                alert(result.error);
+                alert(result.error || "❌ Error al iniciar sesión");
             }
         });
     }
 
-    // 🔄 Cargar usuarios
+    // 🔄 Cargar usuarios (para inicio.html)
     window.loadUsers = async () => {
         const userList = document.getElementById("user-list");
         if (!userList) return;
@@ -119,7 +122,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (response.ok) {
                 window.location.href = `playlist.html?restrictedUser=${selectedUser}`;
             } else {
-                console.log(result); // 👈 Para depurar
                 alert("❌ PIN incorrecto");
             }
         } catch (error) {
@@ -155,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // 🔐 NUEVO: PIN para perfil restringido
+    // 🔐 PIN para perfil restringido
     let selectedRestrictedUser = null;
 
     window.openRestrictedUser = (userId) => {
@@ -177,7 +179,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (response.ok) {
                 window.location.href = `playlist.html?restrictedUser=${selectedRestrictedUser}`;
             } else {
-                console.log(result); // 👈 Para depurar
                 alert(result.error || "❌ PIN incorrecto");
             }
         } catch (error) {
@@ -186,3 +187,34 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 });
+
+// ✅ FUNCIÓN GLOBAL para verificar código SMS desde modal
+window.verifySMSCode = async () => {
+    const code = document.getElementById("smsCodeInput").value.trim();
+    if (!code || code.length !== 6) {
+        alert("⚠️ El código debe tener 6 dígitos.");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:3000/api/verify-sms", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: window.smsUserId, code })
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+            localStorage.setItem("token", result.token);
+            localStorage.setItem("userId", window.smsUserId);
+            localStorage.setItem("userName", window.smsUserName);
+            alert("🎉 Login exitoso");
+            window.location.href = "inicio.html";
+        } else {
+            alert(result.error || "❌ Código incorrecto");
+        }
+    } catch (error) {
+        console.error("Error verificando código SMS:", error);
+        alert("❌ Error interno al verificar código");
+    }
+};
