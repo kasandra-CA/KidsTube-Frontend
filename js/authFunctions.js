@@ -1,6 +1,7 @@
 // authFunctions.js - Lógica de login, registro y validación de PINs
 
 document.addEventListener("DOMContentLoaded", () => {
+    //alert("✅ JS cargado correctamente");
     const registerForm = document.getElementById("register-form");
     const loginForm = document.getElementById("login-form");
     const backendURL = "http://localhost:3000/api";
@@ -34,32 +35,96 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 🔐 LOGIN + código SMS vía modal
-    if (loginForm) {
-        loginForm.addEventListener("submit", async (event) => {
-            event.preventDefault();
-            const formData = new FormData(loginForm);
-            const data = Object.fromEntries(formData);
-
-            const response = await fetch(`${backendURL}/login`, {
+    document.addEventListener("DOMContentLoaded", () => {
+        const loginForm = document.getElementById("login-form");
+        const registerForm = document.getElementById("register-form");
+        const backendURL = "http://localhost:3000/api";
+    
+        if (registerForm) {
+            registerForm.addEventListener("submit", async (event) => {
+                event.preventDefault();
+                const formData = new FormData(registerForm);
+                const data = Object.fromEntries(formData);
+    
+                const response = await fetch(`${backendURL}/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+    
+                const result = await response.json();
+                alert(result.message || result.error);
+            });
+        }
+    
+        if (loginForm) {
+            loginForm.addEventListener("submit", async (event) => {
+                event.preventDefault();
+                const formData = new FormData(loginForm);
+                const data = Object.fromEntries(formData);
+        
+                console.log("📤 Enviando login con:", data);
+        
+                const response = await fetch("http://localhost:3000/api/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+        
+                const result = await response.json();
+                console.log("🟡 Respuesta del backend:", result);
+        
+                if (response.ok) {
+                    window.smsUserId = result.userId;
+                    window.smsUserName = result.user.firstName;
+        
+                    console.log("✅ Mostrando modal");
+                    const modalElement = document.getElementById("smsModal");
+        
+                    if (modalElement) {
+                        const modalInstance = new bootstrap.Modal(modalElement);
+                        modalInstance.show();
+                    } else {
+                        console.error("❌ No se encontró el modal #smsModal");
+                    }
+                } else {
+                    alert(result.error || "❌ Error al iniciar sesión");
+                }
+            });
+        }        
+    });
+    
+    // 🔐 Verificación de código SMS
+    async function verifySMSCode() {
+        const code = document.getElementById("smsCodeInput").value.trim();
+        if (!code || code.length !== 6) {
+            alert("⚠️ El código debe tener 6 dígitos.");
+            return;
+        }
+    
+        try {
+            const response = await fetch("http://localhost:3000/api/verify-sms", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
+                body: JSON.stringify({ userId: window.smsUserId, code })
             });
-
+    
             const result = await response.json();
             if (response.ok) {
-                window.smsUserId = result.userId;
-                window.smsUserName = result.user.firstName;
-
-                // Mostrar modal Bootstrap para ingresar el código SMS
-                new bootstrap.Modal(document.getElementById("smsModal")).show();
+                localStorage.setItem("token", result.token);
+                localStorage.setItem("userId", window.smsUserId);
+                localStorage.setItem("userName", window.smsUserName);
+                alert("🎉 Login exitoso");
+                window.location.href = "inicio.html";
             } else {
-                alert(result.error || "❌ Error al iniciar sesión");
+                alert(result.error || "❌ Código incorrecto");
             }
-        });
+        } catch (error) {
+            console.error("Error verificando código SMS:", error);
+            alert("❌ Error interno al verificar código");
+        }
     }
-
+    
     // 🔄 Cargar usuarios (para inicio.html)
     window.loadUsers = async () => {
         const userList = document.getElementById("user-list");
