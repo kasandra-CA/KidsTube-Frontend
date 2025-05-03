@@ -1,11 +1,8 @@
-// authFunctions.js - Lógica de login, registro y validación de PINs
-
 document.addEventListener("DOMContentLoaded", () => {
     const registerForm = document.getElementById("register-form");
     const loginForm = document.getElementById("login-form");
     const backendURL = "http://localhost:3000/api";
 
-    // 👉 Reutilizable: fetch con token
     function fetchWithToken(url, options = {}) {
         const token = localStorage.getItem("token");
         return fetch(url, {
@@ -33,43 +30,38 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    loginForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-    
-        try {
-            const formData = new FormData(loginForm);
-            const data = Object.fromEntries(formData);
-    
-            const response = await fetch(`${backendURL}/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-            });
-    
-            const result = await response.json().catch(() => ({})); // <-- importante si no hay body
-    
-            console.log("✔ Resultado crudo:", result);
-            console.log("📡 Status recibido:", response.status);
-            console.log("📢 ¿Es ok?", response.ok);
-    
-            if (result?.userId && result?.user?.firstName) {
-                window.smsUserId = result.userId;
-                window.smsUserName = result.user.firstName;
-    
-                const modalElement = document.getElementById("smsModal");
-                console.log("🧪 Modal encontrado:", modalElement);
-    
-                const modalInstance = new bootstrap.Modal(modalElement);
-                modalInstance.show();
-            } else {
-                alert(result.error || "❌ Credenciales inválidas");
+    if (loginForm) {
+        loginForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            try {
+                const formData = new FormData(loginForm);
+                const data = Object.fromEntries(formData);
+
+                const response = await fetch(`${backendURL}/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json().catch(() => ({}));
+
+                if (result?.userId && result?.user?.firstName) {
+                    window.smsUserId = result.userId;
+                    window.smsUserName = result.user.firstName;
+
+                    const modalElement = document.getElementById("smsModal");
+                    const modalInstance = new bootstrap.Modal(modalElement);
+                    modalInstance.show();
+                } else {
+                    alert(result.error || "❌ Credenciales inválidas");
+                }
+            } catch (error) {
+                console.error("❌ Error inesperado durante el login:", error);
+                alert("❌ Error de red o de servidor.");
             }
-        } catch (error) {
-            console.error("❌ Error inesperado durante el login:", error);
-            alert("❌ Error de red o de servidor.");
-        }
-    });
-    
+        });
+    }
 
     window.verifySMSCode = async () => {
         const code = document.getElementById("smsCodeInput").value.trim();
@@ -101,7 +93,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // 🔄 Cargar usuarios (para inicio.html)
     window.loadUsers = async () => {
         const userList = document.getElementById("user-list");
         if (!userList) return;
@@ -143,7 +134,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // 🔐 PIN usuario
     window.openUser = (userId) => {
         selectedUser = userId;
         new bootstrap.Modal(document.getElementById('pinModal')).show();
@@ -168,7 +158,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // 🔐 PIN admin
     window.validateAdminPIN = async () => {
         const pin = document.getElementById("adminPinInput").value;
         const targetPage = localStorage.getItem("adminTarget");
@@ -195,9 +184,6 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Error validando PIN de admin:", error);
         }
     };
-
-    // 🔐 PIN para perfil restringido
-    let selectedRestrictedUser = null;
 
     window.openRestrictedUser = (userId) => {
         selectedRestrictedUser = userId;
