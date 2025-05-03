@@ -105,3 +105,53 @@ async function assignVideosToPlaylist(e) {
         alert("❌ Error inesperado.");
     }
 }
+async function handleSearch() {
+    const query = document.getElementById("youtubeSearchInput").value;
+    const results = await searchYouTube(query);
+  
+    const container = document.getElementById("youtubeResults");
+    container.innerHTML = "";
+  
+    results.forEach(video => {
+      const videoId = video.id.videoId;
+      const title = video.snippet.title;
+      const thumbnail = video.snippet.thumbnails.medium.url;
+  
+      const html = `
+        <div class="col-md-4">
+          <div class="card shadow">
+            <img src="${thumbnail}" class="card-img-top">
+            <div class="card-body">
+              <h6 class="card-title">${title}</h6>
+              <button class="btn btn-success w-100" onclick="saveVideo('${title}', 'https://www.youtube.com/watch?v=${videoId}')">Agregar</button>
+            </div>
+          </div>
+        </div>
+      `;
+      container.innerHTML += html;
+    });
+  }
+  
+  async function saveVideo(title, url) {
+    const token = localStorage.getItem("token");
+  
+    const res = await fetch("http://localhost:3000/api/videos", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": token
+      },
+      body: JSON.stringify({ title, url })
+    });
+  
+    const result = await res.json();
+    alert(result.message || "Video agregado");
+  }
+  
+  async function submitManualUrl() {
+    const url = document.getElementById("manualUrlInput").value;
+    if (!url.includes("youtube.com")) return alert("URL no válida");
+  
+    const title = "Video agregado manualmente";
+    saveVideo(title, url);
+  }  
