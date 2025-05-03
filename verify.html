@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verifica tu cuenta - KidsTube</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body { background-color: #fef6f9; }
+    .card { border-radius: 1rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+    h2 { font-weight: bold; }
+    #estado { margin-top: 1rem; font-size: 1.1rem; }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card p-4 bg-white text-center">
+          <h2 class="text-danger mb-3">📨 Verificación de cuenta</h2>
+          <p>Haz clic en el siguiente botón para verificar tu cuenta en KidsTube.</p>
+          <button class="btn btn-success w-100" onclick="verificarCuenta()">✅ Verificar ahora</button>
+          <div id="estado" class="text-center text-dark mt-4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    async function verificarCuenta() {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
+
+      if (!token) {
+        document.getElementById("estado").innerHTML = "<div class='alert alert-danger'>❌ Token no válido.</div>";
+        return;
+      }
+
+      try {
+        const response = await fetch(`http://localhost:3000/api/verify/${token}`);
+        if (!response.ok) throw new Error("No se pudo verificar");
+
+        // Abrir login en nueva pestaña
+        window.open("auth.html", "_blank");
+
+        document.getElementById("estado").innerHTML = "<div class='alert alert-success'>✅ Cuenta verificada. Login abierto en una nueva pestaña.</div>";
+      } catch (err) {
+        document.getElementById("estado").innerHTML = "<div class='alert alert-danger'>❌ Error al verificar la cuenta.</div>";
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+</body>
+</html>
