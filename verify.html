@@ -10,6 +10,10 @@
     .card { border-radius: 1rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
     h2 { font-weight: bold; }
     #estado { margin-top: 1rem; font-size: 1.1rem; }
+    .btn-return {
+      margin-top: 1.5rem;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -21,6 +25,11 @@
           <p>Haz clic en el siguiente botón para verificar tu cuenta en KidsTube.</p>
           <button class="btn btn-success w-100" onclick="verificarCuenta()">✅ Verificar ahora</button>
           <div id="estado" class="text-center text-dark mt-4"></div>
+        </div>
+
+        <!-- Botón regresar -->
+        <div class="btn-return">
+          <a href="auth.html" class="btn btn-outline-dark">🔙 Volver a Login</a>
         </div>
       </div>
     </div>
@@ -41,10 +50,9 @@
         const response = await fetch(`http://localhost:3000/api/verify/${token}`);
         if (!response.ok) throw new Error("No se pudo verificar");
 
-        // Abrir login en nueva pestaña
         window.open("auth.html", "_blank");
 
-        document.getElementById("estado").innerHTML = "<div class='alert alert-success'>✅ Cuenta verificada. Login abierto en una nueva pestaña.</div>";
+        document.getElementById("estado").innerHTML = "<div class='alert alert-success'>✅ Cuenta verificada. Login abierto en nueva pestaña.</div>";
       } catch (err) {
         document.getElementById("estado").innerHTML = "<div class='alert alert-danger'>❌ Error al verificar la cuenta.</div>";
       }

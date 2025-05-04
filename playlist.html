@@ -1,83 +1,62 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Playlists del Perfil - KidsTube</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #fff3f7;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Playlists del Perfil - KidsTube</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #fff3f7;
+    }
 
-        .navbar-brand {
-            font-weight: bold;
-            font-size: 1.5rem;
-        }
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
 
-        .playlist-title {
-            cursor: pointer;
-        }
+    .card {
+      border-radius: 1rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
 
-        .card {
-            border-radius: 1rem;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-        }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
 
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
+    .card-text {
+      font-size: 0.95rem;
+    }
 
-        .card-text {
-            font-size: 0.95rem;
-        }
-
-        .playlist-header {
-            font-weight: bold;
-        }
-    </style>
+    .playlist-header {
+      font-weight: bold;
+    }
+  </style>
 </head>
 
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-danger shadow">
-        <div class="container">
-            <a class="navbar-brand text-white" href="#">🎬 KidsTube</a>
-        </div>
-    </nav>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-danger shadow-sm">
+    <div class="container">
+      <a class="navbar-brand text-white" href="#">🎬 KidsTube</a>
+    </div>
+  </nav>
 
-    <!-- Contenido -->
-    <div class="container mt-5">
-        <h2 class="text-center text-danger mb-3">🎶 Playlists y Videos</h2>
-
-        <!-- Botón regresar -->
-        <div class="text-end mb-4">
-            <button class="btn btn-outline-dark" onclick="window.location.href='inicio.html'">🔙 Regresar</button>
-        </div>
-
-        <!-- Buscador -->
-        <div class="row justify-content-center mb-3">
-            <div class="col-md-6">
-                <input type="text" class="form-control" id="searchInput"
-                    placeholder="🔍 Buscar video por nombre o descripción">
-            </div>
-        </div>
-
-        <!-- Mensajes -->
-        <p id="searchMessage" class="text-center text-muted d-none">Haz clic en un video para verlo 🎥</p>
-        <p class="text-center text-muted">Haz clic en una lista para ver sus videos 🎬</p>
-
-        <!-- Playlists -->
-        <div id="playlists-container" class="row">
-            <!-- Aquí se mostrarán todas las playlists con sus videos -->
-        </div>
+  <!-- Contenido -->
+  <div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="text-danger">🎵 Tus Playlists</h2>
+      <a href="inicio.html" class="btn btn-outline-dark">🔙 Regresar</a>
     </div>
 
-    <script src="js/playlistFunctions.js"></script>
-    <script src="js/authCheck.js"></script>
+    <div id="playlistContainer" class="row g-4">
+      <!-- Aquí se insertarán las playlists con sus videos -->
+    </div>
+  </div>
 
+  <!-- Scripts -->
+  <script src="js/authCheck.js"></script>
+  <script src="js/playlistFunctions.js"></script>
 </body>
-
 </html>

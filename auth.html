@@ -10,6 +10,11 @@
     .card { border-radius: 1rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
     .form-control { border-radius: 0.75rem; }
     h2 { font-weight: bold; }
+    .btn-return {
+      display: block;
+      margin: 2rem auto 0;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -46,9 +51,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Botón volver -->
+    <div class="btn-return text-center">
+      <a href="inicio.html" class="btn btn-outline-dark">🔙 Regresar</a>
+    </div>
   </div>
 
-  <!-- 🔐 Modal para ingresar código SMS -->
+  <!-- Modal para código SMS -->
   <div class="modal fade" id="smsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content shadow">
@@ -69,16 +79,6 @@
   </div>
 
   <!-- Scripts -->
-  <script>
-    // Verificar que bootstrap esté definido
-    document.addEventListener("DOMContentLoaded", () => {
-      if (!window.bootstrap) {
-        console.warn("❌ Bootstrap no está cargado como objeto global.");
-      } else {
-        console.log("✅ Bootstrap cargado correctamente.");
-      }
-    });
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
   <script src="js/authFunctions.js"></script>
 </body>

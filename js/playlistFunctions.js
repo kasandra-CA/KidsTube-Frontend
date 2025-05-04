@@ -1,150 +1,90 @@
-const backendURL = "http://localhost:3000/api";
-const restrictedUserId = new URLSearchParams(window.location.search).get("restrictedUser");
-const ownerId = localStorage.getItem("userId");
-
-function fetchWithToken(url, options = {}) {
-    const token = localStorage.getItem("token");
-    return fetch(url, {
-        ...options,
-        headers: {
-            ...options.headers,
-            Authorization: `Bearer ${token}`
-        }
-    });
-}
-
 document.addEventListener("DOMContentLoaded", async () => {
-    if (!restrictedUserId || !ownerId) {
-        alert("Faltan datos para cargar las playlists.");
-        return;
-    }
-
-    try {
-        const response = await fetchWithToken(`${backendURL}/playlists?owner=${ownerId}`);
-        const playlists = await response.json();
-
-        const filtered = playlists.filter(p =>
-            p.profiles.some(pr => String(pr._id) === String(restrictedUserId))
-        );
-
-        renderPlaylists(filtered);
-
-        const searchInput = document.getElementById("searchInput");
-        searchInput.addEventListener("input", () => {
-            const term = searchInput.value.trim().toLowerCase();
-            if (term === "") {
-                renderPlaylists(filtered);
-            } else {
-                searchResults(filtered, term);
-            }
-        });
-    } catch (error) {
-        console.error("Error cargando playlists:", error);
-    }
+  await cargarPlaylistsDelUsuarioRestringido();
 });
 
-function renderPlaylists(playlists) {
-    const container = document.getElementById("playlists-container");
-    const searchMsg = document.getElementById("searchMessage");
-    container.innerHTML = "";
-    searchMsg.classList.add("d-none");
+async function cargarPlaylistsDelUsuarioRestringido() {
+  const token = localStorage.getItem("token");
 
-    playlists.forEach(playlist => {
-        const section = document.createElement("div");
-        section.className = "col-12 mb-4";
+  const urlParams = new URLSearchParams(window.location.search);
+  const userId = urlParams.get("restrictedUser");
 
-        const playlistId = `playlist-${playlist._id}`;
-        const toggleId = `toggle-${playlist._id}`;
+  if (!token || !userId) {
+    alert("⚠️ Usuario restringido no autenticado.");
+    return;
+  }
 
-        let videosHTML = "";
-        playlist.videos.forEach(video => {
-            const embedUrl = convertToEmbedURL(video.url);
-            if (!embedUrl) return;
-
-            videosHTML += `
-                <div class="col-md-4 mb-3">
-                    <div class="card">
-                        <iframe class="card-img-top" src="${embedUrl}" frameborder="0" allowfullscreen loading="lazy"></iframe>
-                        <div class="card-body">
-                            <h5 class="card-title">${video.name}</h5>
-                            <p class="card-text">${video.description || ''}</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-
-        section.innerHTML = `
-            <h4 class="text-primary mb-2" style="cursor:pointer;" onclick="toggleVideos('${playlistId}', '${toggleId}')">
-                📂 ${playlist.name}
-                <small class="text-muted">(${playlist.videos.length} videos)</small>
-                <span id="${toggleId}" style="font-size: 1rem;">🔽</span>
-            </h4>
-            <div id="${playlistId}" class="row mb-3" style="display: block;">
-                ${videosHTML}
-            </div>
-            <hr>
-        `;
-
-        container.appendChild(section);
-    });
-}
-
-function searchResults(playlists, term) {
-    const container = document.getElementById("playlists-container");
-    const searchMsg = document.getElementById("searchMessage");
-    container.innerHTML = "";
-    searchMsg.classList.remove("d-none");
-
-    let results = [];
-
-    playlists.forEach(playlist => {
-        playlist.videos.forEach(video => {
-            const embedUrl = convertToEmbedURL(video.url);
-            if (!embedUrl) return;
-
-            const nameMatch = video.name.toLowerCase().includes(term);
-            const descMatch = (video.description || "").toLowerCase().includes(term);
-
-            if (nameMatch || descMatch) {
-                results.push({ video, embedUrl });
-            }
-        });
+  try {
+    const res = await fetch(`http://localhost:3000/api/playlists?restrictedUser=${userId}`, {
+      headers: { Authorization: `Bearer ${token}` }
     });
 
-    if (results.length === 0) {
-        container.innerHTML = `<p class='text-center text-muted'>❌ No se encontraron resultados para "<strong>${term}</strong>"</p>`;
-        return;
+    const playlists = await res.json();
+    const container = document.getElementById("playlistContainer");
+    container.innerHTML = "";
+
+    if (playlists.length === 0) {
+      container.innerHTML = "<p class='text-center text-muted'>No hay playlists disponibles.</p>";
+      return;
     }
 
-    results.forEach(({ video, embedUrl }) => {
-        const col = document.createElement("div");
-        col.className = "col-md-4 mb-3";
-        col.innerHTML = `
-            <div class="card h-100">
-                <iframe class="card-img-top" src="${embedUrl}" frameborder="0" allowfullscreen loading="lazy"></iframe>
-                <div class="card-body">
+    playlists.forEach(playlist => {
+      const col = document.createElement("div");
+      col.className = "col-12";
+
+      let videosHTML = "";
+
+      if (!playlist.videos || playlist.videos.length === 0) {
+        videosHTML = `<p class="text-muted">Esta playlist no tiene videos.</p>`;
+      } else {
+        videosHTML = `<div class="row row-cols-1 row-cols-md-3 g-3">`;
+
+        playlist.videos.forEach(video => {
+          if (isValidYouTubeEmbedUrl(video.url)) {
+            videosHTML += `
+              <div class="col">
+                <div class="card h-100">
+                  <iframe class="card-img-top" src="${video.url}" frameborder="0" allowfullscreen></iframe>
+                  <div class="card-body">
                     <h5 class="card-title">${video.name}</h5>
-                    <p class="card-text">${video.description || ''}</p>
+                    <p class="card-text">${video.description || "Sin descripción"}</p>
+                  </div>
                 </div>
-            </div>
-        `;
-        container.appendChild(col);
+              </div>
+            `;
+          } else {
+            videosHTML += `
+              <div class="col">
+                <div class="card h-100 border-warning bg-light">
+                  <div class="card-body text-center">
+                    <h5 class="card-title text-danger">⚠️ ${video.name || "Video sin nombre"}</h5>
+                    <p class="card-text">Este video está asignado pero no tiene una URL válida.</p>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        });
+
+        videosHTML += `</div>`;
+      }
+
+      col.innerHTML = `
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h4 class="text-danger playlist-header mb-3">🎧 ${playlist.name}</h4>
+            ${videosHTML}
+          </div>
+        </div>
+      `;
+
+      container.appendChild(col);
     });
+  } catch (error) {
+    console.error("❌ Error al cargar playlists:", error);
+    alert("Error al cargar las playlists.");
+  }
 }
 
-function convertToEmbedURL(url) {
-    if (!url) return null;
-    if (url.includes("youtube.com/embed/")) return url;
-    
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
-    return match ? `https://www.youtube.com/embed/${match[1]}` : null;
-}
-
-function toggleVideos(containerId, iconId) {
-    const container = document.getElementById(containerId);
-    const icon = document.getElementById(iconId);
-    const isVisible = container.style.display === "block";
-    container.style.display = isVisible ? "none" : "block";
-    icon.textContent = isVisible ? "🔽" : "🔼";
+function isValidYouTubeEmbedUrl(url) {
+  return typeof url === "string" && url.startsWith("https://www.youtube.com/embed/");
 }

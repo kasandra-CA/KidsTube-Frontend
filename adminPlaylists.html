@@ -1,119 +1,84 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Administrar Playlists - KidsTube</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #fff3f7;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administrar Playlists - KidsTube</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #fff3f7;
+    }
 
-        .navbar-brand {
-            font-weight: bold;
-            font-size: 1.5rem;
-        }
+    .card {
+      border-radius: 1rem;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    }
 
-        .btn-group-custom {
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
+    .btn-add {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
 
-        .playlist-card {
-            border-radius: 1rem;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-        }
-
-        .modal-content {
-            border-radius: 1rem;
-        }
-
-        .form-label {
-            font-weight: 500;
-        }
-
-        .video-card {
-            border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s;
-        }
-
-        .video-card:hover {
-            transform: scale(1.02);
-        }
-    </style>
+    .top-buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+  </style>
 </head>
-
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-danger shadow">
-        <div class="container">
-            <a class="navbar-brand text-white" href="#">🎬 KidsTube</a>
-        </div>
-    </nav>
-
-    <!-- Contenido -->
-    <div class="container mt-5">
-        <h2 class="text-center text-danger mb-4">🎵 Administrar Playlists</h2>
-
-        <!-- Botones de acción -->
-        <div class="d-flex justify-content-between align-items-center flex-wrap btn-group-custom mb-4">
-            <button class="btn btn-outline-dark" onclick="window.location.href='inicio.html'">🔙 Regresar</button>
-            <button class="btn btn-primary" onclick="window.location.href='index.html'">🎬 Crear Video</button>
-            <button class="btn btn-secondary" onclick="window.location.href='adminAssignVideos.html'">➕ Asignar Videos a Playlist</button>
-            <button class="btn btn-success" onclick="openAddPlaylistModal()">➕ Nueva Playlist</button>
-        </div>
-
-        <!-- Listado de playlists -->
-        <div class="row" id="playlist-list">
-            <!-- Aquí se cargarán las playlists dinámicamente -->
-        </div>
+  <div class="container py-5">
+    <div class="top-buttons">
+      <a href="inicio.html" class="btn btn-outline-dark">🔙 Regresar</a>
+      <h2 class="text-danger text-center w-100">🎵 Administración de Playlists</h2>
     </div>
 
-    <!-- Modal para agregar/editar playlist -->
-    <div class="modal fade" id="playlistModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content shadow">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="playlistModalTitle">Agregar Playlist</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="playlistId">
-                    <div class="mb-3">
-                        <label class="form-label">🎵 Nombre del Playlist *</label>
-                        <input type="text" class="form-control" id="playlistName" placeholder="Ej. Favoritos de Mario">
-                    </div>
+    <div id="playlist-list" class="row g-4"></div>
 
-                    <div class="mb-3">
-                        <label class="form-label">👤 Perfiles Asociados *</label>
-                        <div id="profilesList" class="ps-2">
-                            <!-- Perfiles con checkboxes -->
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">🎞️ Videos para esta Playlist *</label>
-                        <div id="videosList" class="row">
-                            <!-- Aquí se cargarán los videos como tarjetas Bootstrap -->
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button class="btn btn-success" onclick="savePlaylist()">Guardar</button>
-                </div>
-            </div>
-        </div>
+    <div class="d-flex justify-content-end mt-4">
+      <a href="index.html" class="btn btn-success me-2">➕ Agregar Video</a>
+      <a href="adminAssignVideos.html" class="btn btn-warning">📎 Asignar Videos a Playlist</a>
     </div>
+  </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/adminPlaylists.js"></script>
-    <script src="js/authCheck.js"></script>
+  <!-- Botón flotante para crear nueva playlist -->
+  <button class="btn btn-danger btn-lg rounded-circle btn-add" onclick="openPlaylistModal()">➕</button>
+
+  <!-- Modal de Crear/Editar Playlist -->
+  <div class="modal fade" id="playlistModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content shadow">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">🎼 Nueva Playlist</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="playlistId" />
+          <div class="mb-3">
+            <label class="form-label">Nombre de la Playlist</label>
+            <input type="text" class="form-control" id="playlistName" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Asignar a Usuario Restringido</label>
+            <select class="form-select" id="restrictedUserSelect">
+              <option value="">-- Seleccionar usuario --</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-success" onclick="savePlaylist()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/authCheck.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/adminPlaylists.js"></script>
 </body>
-
 </html>

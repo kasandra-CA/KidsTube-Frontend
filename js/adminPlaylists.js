@@ -1,207 +1,134 @@
 const backendURL = "http://localhost:3000/api";
-let currentPlaylistId = null;
+let restrictedUsers = [];
 
-function fetchWithToken(url, options = {}) {
-    const token = localStorage.getItem("token");
-    return fetch(url, {
-        ...options,
-        headers: {
-            ...options.headers,
-            Authorization: `Bearer ${token}`
-        }
-    });
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    loadPlaylists();
-    loadProfiles();
-    loadVideos();
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadRestrictedUsers();
+  await loadPlaylists();
 });
 
+async function loadRestrictedUsers() {
+  const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(`${backendURL}/restricted-users?owner=${userId}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  restrictedUsers = await res.json();
+  const select = document.getElementById("restrictedUserSelect");
+  select.innerHTML = `<option value="">-- Seleccionar usuario --</option>`;
+  restrictedUsers.forEach(user => {
+    const option = document.createElement("option");
+    option.value = user._id;
+    option.textContent = user.name;
+    select.appendChild(option);
+  });
+}
+
+function openPlaylistModal(playlist = null) {
+  const modal = new bootstrap.Modal(document.getElementById("playlistModal"));
+  document.getElementById("playlistId").value = playlist?._id || "";
+  document.getElementById("playlistName").value = playlist?.name || "";
+
+  const restrictedUserId = typeof playlist?.restrictedUser === "object"
+    ? playlist.restrictedUser._id
+    : playlist?.restrictedUser;
+
+  document.getElementById("restrictedUserSelect").value = restrictedUserId || "";
+  modal.show();
+}
+
 async function loadPlaylists() {
-    const playlistList = document.getElementById("playlist-list");
-    const ownerId = localStorage.getItem("userId");
-
-    try {
-        const response = await fetchWithToken(`${backendURL}/playlists?owner=${ownerId}`);
-        const playlists = await response.json();
-        playlistList.innerHTML = "";
-
-        playlists.forEach(playlist => {
-            const safeName = playlist.name.replace(/'/g, "\\'");
-            const profileIds = playlist.profiles.map(p => p._id);
-            const videoIds = playlist.videos.map(v => v?._id).filter(Boolean);
-
-            const card = document.createElement("div");
-            card.className = "col-md-4 mb-3";
-            card.innerHTML = `
-                <div class="card p-3 shadow-sm">
-                    <h5 class="card-title text-primary">${playlist.name}</h5>
-                    <p class="card-text">Perfiles: ${playlist.profiles.map(p => p.name).join(", ")}</p>
-                    <p class="card-text">🎞️ Total de videos: ${playlist.videos.length}</p>
-                    <div class="d-flex justify-content-between">
-                        <button class="btn btn-warning btn-sm"
-                            onclick='editPlaylist("${playlist._id}", "${safeName}", ${JSON.stringify(profileIds)}, ${JSON.stringify(videoIds)})'>
-                            ✏️ Editar
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="deletePlaylist('${playlist._id}')">🗑️ Eliminar</button>
-                    </div>
-                </div>
-            `;
-            playlistList.appendChild(card);
-        });
-    } catch (err) {
-        console.error("Error cargando playlists:", err);
+  const res = await fetch(`${backendURL}/playlists`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`
     }
-}
+  });
 
-async function loadProfiles() {
-    const profilesList = document.getElementById("profilesList");
-    const ownerId = localStorage.getItem("userId");
+  const playlists = await res.json();
+  console.log("📂 Playlists recibidas del backend:", playlists); // 👈 Aquí ves si restrictedUser viene poblado
 
-    try {
-        const response = await fetchWithToken(`${backendURL}/restricted-users?owner=${ownerId}`);
-        const profiles = await response.json();
-        profilesList.innerHTML = "";
+  const container = document.getElementById("playlist-list");
+  container.innerHTML = "";
 
-        profiles.forEach(profile => {
-            const checkbox = document.createElement("div");
-            checkbox.className = "form-check";
-            checkbox.innerHTML = `
-                <input class="form-check-input" type="checkbox" value="${profile._id}" id="profile-${profile._id}">
-                <label class="form-check-label" for="profile-${profile._id}">${profile.name}</label>
-            `;
-            profilesList.appendChild(checkbox);
-        });
-    } catch (err) {
-        console.error("Error cargando perfiles:", err);
-    }
-}
+  playlists.forEach(playlist => {
+    const user = typeof playlist.restrictedUser === "object"
+      ? playlist.restrictedUser
+      : restrictedUsers.find(u => u._id === playlist.restrictedUser);
 
-async function loadVideos() {
-    const videosList = document.getElementById("videosList");
-    const ownerId = localStorage.getItem("userId");
+    const userName = user?.name || "N/A";
 
-    try {
-        const response = await fetchWithToken(`${backendURL}/videos?owner=${ownerId}`);
-        const videos = await response.json();
-        videosList.innerHTML = "";
-
-        videos.forEach(video => {
-            const embedUrl = convertToEmbedURL(video.url);
-            if (!embedUrl) return;
-
-            const wrapper = document.createElement("div");
-            wrapper.className = "col-md-4 mb-3";
-
-            wrapper.innerHTML = `
-                <div class="card shadow-sm h-100">
-                    <iframe class="card-img-top" src="${embedUrl}" frameborder="0" style="width:100%; height:180px;" allowfullscreen loading="lazy"></iframe>
-                    <div class="card-body p-2">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="${video._id}" id="video-${video._id}">
-                            <label class="form-check-label" for="video-${video._id}">${video.name}</label>
-                        </div>
-                    </div>
-                </div>
-            `;
-            videosList.appendChild(wrapper);
-        });
-    } catch (err) {
-        console.error("Error cargando videos:", err);
-    }
-}
-
-function convertToEmbedURL(url) {
-    if (!url) return null;
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
-    return match ? `https://www.youtube.com/embed/${match[1]}` : url;
-}
-
-function openAddPlaylistModal() {
-    currentPlaylistId = null;
-    document.getElementById("playlistModalTitle").innerText = "Agregar Playlist";
-    document.getElementById("playlistId").value = "";
-    document.getElementById("playlistName").value = "";
-
-    document.querySelectorAll("#profilesList input").forEach(input => input.checked = false);
-    document.querySelectorAll("#videosList input").forEach(input => input.checked = false);
-
-    new bootstrap.Modal(document.getElementById("playlistModal")).show();
-}
-
-async function editPlaylist(id, name, profileIds, videoIds) {
-    currentPlaylistId = id;
-    document.getElementById("playlistModalTitle").innerText = "Editar Playlist";
-    document.getElementById("playlistId").value = id;
-    document.getElementById("playlistName").value = name;
-
-    await loadProfiles();
-    await loadVideos();
-
-    document.querySelectorAll("#profilesList input").forEach(input => {
-        input.checked = profileIds.includes(input.value);
-    });
-
-    document.querySelectorAll("#videosList input").forEach(input => {
-        input.checked = videoIds.includes(input.value);
-    });
-
-    new bootstrap.Modal(document.getElementById("playlistModal")).show();
+    const card = `
+      <div class="col-md-4">
+        <div class="card p-3">
+          <h5>${playlist.name}</h5>
+          <p class="text-muted">Asignado a: ${userName}</p>
+          <div class="d-flex justify-content-between">
+            <button class="btn btn-sm btn-primary" onclick='openPlaylistModal(${JSON.stringify(playlist)})'>✏️ Editar</button>
+            <button class="btn btn-sm btn-danger" onclick='deletePlaylist("${playlist._id}")'>🗑️ Eliminar</button>
+          </div>
+        </div>
+      </div>
+    `;
+    container.innerHTML += card;
+  });
 }
 
 async function savePlaylist() {
-    const name = document.getElementById("playlistName").value.trim();
-    const owner = localStorage.getItem("userId");
+  const id = document.getElementById("playlistId").value.trim();
+  const name = document.getElementById("playlistName").value.trim();
+  const restrictedUser = document.getElementById("restrictedUserSelect").value;
+  const token = localStorage.getItem("token");
 
-    const selectedProfiles = Array.from(document.querySelectorAll("#profilesList input:checked")).map(i => i.value);
-    const selectedVideos = Array.from(document.querySelectorAll("#videosList input:checked")).map(i => i.value);
+  if (!name || !restrictedUser) {
+    alert("⚠️ Debes ingresar un nombre y seleccionar un usuario restringido.");
+    return;
+  }
 
-    if (!name || selectedProfiles.length === 0 || selectedVideos.length === 0) {
-        alert("⚠️ Debes completar todos los campos obligatorios.");
-        return;
+  const payload = { name, restrictedUser };
+  const url = id ? `${backendURL}/playlists/${id}` : `${backendURL}/playlists`;
+  const method = id ? "PUT" : "POST";
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      console.error("❌ Error al guardar playlist:", result);
+      alert(result.error || "No se pudo guardar la playlist.");
+      return;
     }
 
-    const payload = { name, owner, profiles: selectedProfiles, videos: selectedVideos };
-    const method = currentPlaylistId ? "PUT" : "POST";
-    const url = currentPlaylistId ? `${backendURL}/playlists/${currentPlaylistId}` : `${backendURL}/playlists`;
+    alert(result.message || "✅ Playlist guardada exitosamente");
 
-    try {
-        const response = await fetchWithToken(url, {
-            method,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
+    const modalElement = document.getElementById("playlistModal");
+    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+    modalInstance.hide();
 
-        const result = await response.json();
-        if (response.ok) {
-            alert(result.message);
-            bootstrap.Modal.getInstance(document.getElementById("playlistModal")).hide();
-            loadPlaylists();
-        } else {
-            alert(result.error);
-        }
-    } catch (err) {
-        console.error("Error al guardar playlist:", err);
-    }
+    await loadPlaylists();
+  } catch (error) {
+    console.error("❌ Error en la solicitud:", error);
+    alert("❌ Error de red o del servidor.");
+  }
 }
 
 async function deletePlaylist(id) {
-    if (!confirm("¿Seguro que deseas eliminar esta playlist?")) return;
-
-    try {
-        const response = await fetchWithToken(`${backendURL}/playlists/${id}`, {
-            method: "DELETE"
-        });
-
-        const result = await response.json();
-        if (response.ok) {
-            alert(result.message);
-            loadPlaylists();
-        } else {
-            alert(result.error);
-        }
-    } catch (err) {
-        console.error("Error al eliminar playlist:", err);
+  if (!confirm("¿Estás seguro de eliminar esta playlist?")) return;
+  const res = await fetch(`${backendURL}/playlists/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`
     }
+  });
+  const result = await res.json();
+  alert(result.message || "Playlist eliminada");
+  await loadPlaylists();
 }
