@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Completar Registro - KidsTube</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #fff3f7;
+    }
+
+    .form-container {
+      margin-top: 5%;
+      border-radius: 1rem;
+      background-color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+    }
+
+    .form-label {
+      font-weight: 500;
+    }
+
+    .btn-back {
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6 form-container">
+        <h2 class="text-center text-danger mb-4">✏️ Completar Registro</h2>
+        <p class="text-muted text-center mb-4">Por favor, completa los siguientes datos para terminar tu registro.</p>
+
+        <form id="completeForm">
+          <div class="mb-3">
+            <label for="phone" class="form-label">📱 Teléfono</label>
+            <input type="tel" id="phone" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="pin" class="form-label">🔢 PIN (6 dígitos)</label>
+            <input type="password" id="pin" maxlength="6" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="country" class="form-label">🌍 País</label>
+            <input type="text" id="country" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="birthdate" class="form-label">🎂 Fecha de nacimiento</label>
+            <input type="date" id="birthdate" class="form-control" required>
+          </div>
+
+          <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-success">✅ Finalizar Registro</button>
+          </div>
+        </form>
+
+        <div class="text-center btn-back">
+          <a href="auth.html" class="btn btn-outline-dark">🔙 Volver</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    document.getElementById("completeForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const token = localStorage.getItem("token");
+      if (!token) return alert("No hay sesión activa.");
+
+      const data = {
+        phone: document.getElementById("phone").value,
+        pin: document.getElementById("pin").value,
+        country: document.getElementById("country").value,
+        birthdate: document.getElementById("birthdate").value
+      };
+
+      try {
+        const res = await fetch("http://localhost:3000/api/complete-profile", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+          alert("🎉 Registro completado con éxito.");
+          window.location.href = "inicio.html";
+        } else {
+          alert("❌ Error: " + (result.error || "no se pudo completar el registro."));
+        }
+      } catch (err) {
+        alert("❌ Error inesperado.");
+      }
+    });
+  </script>
+</body>
+</html>

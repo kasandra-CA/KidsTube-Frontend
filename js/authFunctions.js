@@ -211,4 +211,33 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("❌ Error al validar PIN");
         }
     };
+
+    //Sesion con Google
+    window.handleGoogleCredentialResponse = async function (response) {
+        const idToken = response.credential;
+
+        // Enviar al backend
+        const res = await fetch("http://localhost:3000/api/google-login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ idToken })
+        });
+
+        const result = await res.json();
+
+        if (res.ok && result.token && result.userId) {
+            localStorage.setItem("token", result.token);
+            localStorage.setItem("userId", result.userId);
+            localStorage.setItem("userName", result.name || "Usuario");
+
+            // Verificar si le faltan datos
+            if (result.needExtraData) {
+                window.location.href = "completar-registro.html"; // esta página la creas tú
+            } else {
+                window.location.href = "inicio.html";
+            }
+        } else {
+            alert(result.error || "❌ Error de autenticación con Google.");
+        }
+    };
 });

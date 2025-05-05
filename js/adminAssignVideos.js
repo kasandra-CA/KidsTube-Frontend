@@ -218,7 +218,7 @@ function escapeQuotes(str) {
 // 🌐 Función de búsqueda de YouTube
 async function searchYouTube(query) {
   try {
-    const apiKey = "api aqui";
+    const apiKey = "AIzaSyDVkVIOSaFUSrgi2XtTS2u5LN3PyB_XX68";
     const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(query)}&maxResults=6&key=${apiKey}`;
     
     const response = await fetch(url);
