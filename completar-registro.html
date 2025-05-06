@@ -36,6 +36,11 @@
 
         <form id="completeForm">
           <div class="mb-3">
+            <label for="lastName" class="form-label">🧑‍🦱 Apellidos</label>
+            <input type="text" id="lastName" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
             <label for="phone" class="form-label">📱 Teléfono</label>
             <input type="tel" id="phone" class="form-control" required>
           </div>
@@ -76,6 +81,7 @@
       if (!token) return alert("No hay sesión activa.");
 
       const data = {
+        lastName: document.getElementById("lastName").value,
         phone: document.getElementById("phone").value,
         pin: document.getElementById("pin").value,
         country: document.getElementById("country").value,
