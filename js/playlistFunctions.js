@@ -22,7 +22,7 @@ async function cargarPlaylistsDelUsuarioRestringido() {
     const container = document.getElementById("playlistContainer");
     container.innerHTML = "";
 
-    if (playlists.length === 0) {
+    if (playlists.length ===0) {
       container.innerHTML = "<p class='text-center text-muted'>No hay playlists disponibles.</p>";
       return;
     }
@@ -80,11 +80,67 @@ async function cargarPlaylistsDelUsuarioRestringido() {
       container.appendChild(col);
     });
   } catch (error) {
-    console.error("❌ Error al cargar playlists:", error);
+    console.erro("❌ Error al cargar playlists:", error);
     alert("Error al cargar las playlists.");
   }
 }
 
 function isValidYouTubeEmbedUrl(url) {
   return typeof url === "string" && url.startsWith("https://www.youtube.com/embed/");
+}
+
+// 🔍 Búsqueda de videos desde backend REST
+window.handlePlaylistSearch = async function () {
+  const token = localStorage.getItem("token");
+  const urlParams = new URLSearchParams(window.location.search);
+  const userId = urlParams.get("restrictedUser");
+  const query = document.getElementById("playlistSearchInput").value.trim();
+
+  if (!query) {
+    await cargarPlaylistsDelUsuarioRestringido();
+    return;
+  }
+
+  try {
+    const res = await fetch(`http://localhost:3000/api/playlists/search-videos?userId=${userId}&text=${encodeURIComponent(query)}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const videos = await res.json();
+    renderSearchResults(videos);
+  } catch (err) {
+    console.error("❌ Error al buscar videos:", err);
+    alert("Error al realizar la búsqueda.");
+  }
+};
+
+function renderSearchResults(videos) {
+  const container = document.getElementById("playlistContainer");
+ container.innerHTML = "";
+
+  if (!videos || videos.length === 0) {
+    container.innerHTML = "<p class='text-center text-muted'>❌ No se encontraron videos con ese término.</p>";
+    return;
+  }
+
+  let content = `<div class="row row-cols-1 row-cols-md-3 g-3">`;
+
+  videos.forEach(video => {
+    if (isValidYouTubeEmbedUrl(video.url)) {
+      content += `
+        <div class="col">
+          <div class="card h-100">
+            <iframe class="card-img-top" src="${video.url}" frameborder="0" allowfullscreen></iframe>
+            <div class="card-body">
+              <h5 class="card-title">${video.name}</h5>
+              <p class="card-text">${video.description || "Sin descripción"}</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  });
+
+  content += `</div>`;
+  container.innerHTML = content;
 }

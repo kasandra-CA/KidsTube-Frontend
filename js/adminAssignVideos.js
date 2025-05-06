@@ -6,23 +6,51 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadVideos();
 });
 
-// 🔄 Cargar playlists del usuario
-import { getPlaylistsByRestrictedUser } from "./graphqlQueries.js";
-
 async function loadPlaylists() {
-  const userId = localStorage.getItem("userId");
-  const token = localStorage.getItem("token");
+  const restrictedUserId = localStorage.getItem("restrictedUserId");
+  console.log("🎯 restrictedUserId:", restrictedUserId);
 
-  if (!userId || !token) {
-    alert("⚠️ Debes iniciar sesión");
+  const directPlaylistId = localStorage.getItem("directPlaylistId");
+  const token = localStorage.getItem("token");
+  const select = document.getElementById("playlistSelector");
+
+  if (!token) {
+    alert("⚠️ Debes iniciar sesión como administrador");
+    return;
+  }
+
+  // Desde adminPlaylists.html
+  if (directPlaylistId) {
+    try {
+      const res = await fetch(`${backendURL}/playlists/${directPlaylistId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const playlist = await res.json();
+      playlists = [playlist];
+
+      select.innerHTML = `<option value="${playlist._id}" selected>${playlist.name}</option>`;
+      localStorage.removeItem("directPlaylistId");
+      return;
+    } catch (err) {
+      console.error("❌ Error al cargar playlist directa:", err);
+      alert("Error al cargar la playlist seleccionada.");
+      return;
+    }
+  }
+
+  // Desde adminUsers.html
+  if (!restrictedUserId) {
+    alert("⚠️ Debes seleccionar primero un perfil desde el panel");
+    window.location.href = "adminUsers.html";
     return;
   }
 
   try {
-    const data = await getPlaylistsByRestrictedUser(userId);
-    playlists = data.restrictedUserPlaylists || [];
+    const res = await fetch(`${backendURL}/playlists?restrictedUser=${restrictedUserId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    playlists = await res.json();
 
-    const select = document.getElementById("playlistSelector");
     select.innerHTML = '<option value="">-- Elegir una Playlist --</option>';
     playlists.forEach(p => {
       const option = document.createElement("option");
@@ -30,14 +58,13 @@ async function loadPlaylists() {
       option.textContent = p.name;
       select.appendChild(option);
     });
+
+    console.log("🎯 Playlists cargadas:", playlists);
   } catch (err) {
     console.error("❌ Error al obtener playlists:", err);
-    alert("Error al cargar playlists con GraphQL");
+    alert("Error al cargar playlists");
   }
 }
-
-// 📺 Cargar videos existentes del usuario
-import { getVideosByUser } from "./graphqlQueries.js";
 
 async function loadVideos() {
   const userId = localStorage.getItem("userId");
@@ -49,15 +76,18 @@ async function loadVideos() {
   }
 
   try {
-    const data = await getVideosByUser(userId);
-    renderVideos(data.videosByUser || []);
+    const res = await fetch(`${backendURL}/videos?owner=${userId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const videos = await res.json();
+    renderVideos(videos);
   } catch (err) {
-    console.error("❌ Error al obtener videos con GraphQL:", err);
+    console.error("❌ Error al obtener videos:", err);
     alert("Error al cargar videos");
   }
 }
 
-// 🖼️ Renderizar cards de videos
 function renderVideos(videos) {
   const container = document.getElementById("video-list");
   container.innerHTML = "";
@@ -78,7 +108,6 @@ function renderVideos(videos) {
   });
 }
 
-// ✅ Asignar videos seleccionados a una playlist
 document.getElementById("assignForm").addEventListener("submit", async e => {
   e.preventDefault();
   const playlistId = document.getElementById("playlistSelector").value;
@@ -103,7 +132,6 @@ document.getElementById("assignForm").addEventListener("submit", async e => {
   await loadVideos();
 });
 
-// 🔍 Buscar videos desde YouTube
 async function handleSearch() {
   const input = document.getElementById("youtubeSearchInput");
   const query = input.value.trim();
@@ -147,7 +175,6 @@ async function handleSearch() {
   }
 }
 
-// 🧪 Agregar video desde resultados de búsqueda
 async function submitVideoFromSearch(videoId, title) {
   const url = `https://www.youtube.com/embed/${videoId}`;
   const description = "Video agregado desde búsqueda de YouTube";
@@ -169,7 +196,6 @@ async function submitVideoFromSearch(videoId, title) {
   await loadVideos();
 }
 
-// ⛓️ Agregar video desde URL manual
 async function submitManualUrl() {
   const url = document.getElementById("manualUrlInput").value;
   const owner = localStorage.getItem("userId");
@@ -199,7 +225,6 @@ async function submitManualUrl() {
   await loadVideos();
 }
 
-// 🔁 Convertir URL normal a formato embed (mejorado)
 function convertToEmbedUrl(url) {
   try {
     const urlObj = new URL(url);
@@ -213,7 +238,6 @@ function convertToEmbedUrl(url) {
   }
 }
 
-// 🎬 Previsualización de video manual (mejorada)
 window.previewVideoFromURL = () => {
   const inputEl = document.getElementById("manualUrlInput");
   const preview = document.getElementById("manualPreview");
@@ -233,17 +257,15 @@ window.previewVideoFromURL = () => {
   }
 };
 
-// 🔐 Escapar comillas en strings
 function escapeQuotes(str) {
   return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
 }
 
-// 🌐 Función de búsqueda de YouTube
 async function searchYouTube(query) {
   try {
     const apiKey = "AIzaSyDVkVIOSaFUSrgi2XtTS2u5LN3PyB_XX68";
     const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(query)}&maxResults=6&key=${apiKey}`;
-    
+
     const response = await fetch(url);
     if (!response.ok) {
       const errorText = await response.text();
@@ -258,4 +280,3 @@ async function searchYouTube(query) {
     return { items: [] };
   }
 }
-  

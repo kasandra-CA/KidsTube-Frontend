@@ -23,7 +23,7 @@
   <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2 class="text-primary">🎞️ Asignar Videos a Playlists</h2>
-      <a href="inicio.html" class="btn btn-outline-dark">🔙 Volver</a>
+      <button class="btn btn-outline-dark" onclick="volverAlPanel()">🔙 Volver al panel</button>
     </div>
 
     <!-- Selector de playlist -->
@@ -47,24 +47,35 @@
 
   <!-- Scripts -->
   <script type="module">
-    import { getPlaylistsByRestrictedUser } from './js/graphqlQueries.js';
-
     const backendURL = "http://localhost:3000/api";
     let playlists = [];
 
     document.addEventListener("DOMContentLoaded", async () => {
-      await loadPlaylists();
+      const restrictedUserId = localStorage.getItem("restrictedUserId");
+      if (!restrictedUserId) {
+        alert("⚠️ Debes seleccionar primero un perfil desde el panel");
+        window.location.href = "adminUsers.html";
+        return;
+      }
+
+      await loadPlaylists(restrictedUserId);
       await loadVideos();
     });
 
-    // 🔄 Cargar playlists del usuario autenticado (usando GraphQL)
-    async function loadPlaylists() {
-      const userId = localStorage.getItem("restrictedUserId") || localStorage.getItem("userId");
-      if (!userId) return alert("❗ ID del usuario no encontrado.");
+    async function loadPlaylists(restrictedUserId) {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("❗ Token no encontrado.");
+        return;
+      }
 
       try {
-        const data = await getPlaylistsByRestrictedUser(userId);
-        playlists = data.restrictedUserPlaylists || [];
+        const res = await fetch(`${backendURL}/playlists?restrictedUser=${restrictedUserId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+        playlists = data;
 
         const select = document.getElementById("playlistSelector");
         select.innerHTML = '<option value="">-- Elegir una Playlist --</option>';
@@ -74,13 +85,14 @@
           option.textContent = p.name;
           select.appendChild(option);
         });
+
+        console.log("✅ Playlists cargadas:", playlists);
       } catch (err) {
         console.error("❌ Error cargando playlists:", err);
         alert("Error cargando playlists del usuario.");
       }
     }
 
-    // 🎥 Cargar videos disponibles creados por el usuario (REST)
     async function loadVideos() {
       const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
@@ -98,7 +110,6 @@
       }
     }
 
-    // 🖼️ Renderizar los videos como tarjetas con checkbox
     function renderVideos(videos) {
       const container = document.getElementById("video-list");
       container.innerHTML = "";
@@ -129,7 +140,6 @@
       });
     }
 
-    // ✅ Asignar videos seleccionados a una playlist (REST)
     document.getElementById("assignForm").addEventListener("submit", async e => {
       e.preventDefault();
 
@@ -159,6 +169,11 @@
         alert("❌ No se pudo completar la asignación.");
       }
     });
+
+    window.volverAlPanel = function () {
+      localStorage.removeItem("restrictedUserId");
+      window.location.href = "adminUsers.html";
+    };
   </script>
 </body>
 </html>

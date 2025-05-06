@@ -132,3 +132,7 @@ async function deletePlaylist(id) {
   alert(result.message || "Playlist eliminada");
   await loadPlaylists();
 }
+function asignarDesdePlaylist(playlistId) {
+  localStorage.setItem("directPlaylistId", playlistId);
+  window.location.href = "adminAssignVideos.html";
+}

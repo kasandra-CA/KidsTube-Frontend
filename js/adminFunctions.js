@@ -41,6 +41,7 @@ async function loadRestrictedUsers() {
 }
 
 function asignarPlaylists(restrictedUserId) {
+    console.log("🧪 Guardando restrictedUserId:", restrictedUserId);
     localStorage.setItem("restrictedUserId", restrictedUserId);
     window.location.href = "adminAssignVideos.html";
   }
