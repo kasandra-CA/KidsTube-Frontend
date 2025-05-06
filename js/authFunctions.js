@@ -212,4 +212,69 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
+    window.handleGoogleCredentialResponse = async function (response) {
+        console.log("📥 Token recibido desde Google:", response);
+
+        const idToken = response.credential;
+
+        try {
+            const res = await fetch("http://localhost:3000/api/google-login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ idToken })
+            });
+
+            const result = await res.json();
+            console.log("🔍 Respuesta del backend:", result);
+
+            if (res.ok && result.token && result.userId) {
+                localStorage.setItem("token", result.token);
+                localStorage.setItem("userId", result.userId);
+                localStorage.setItem("userName", result.name || "Usuario");
+
+                if (result.needExtraData) {
+                    console.log("➡ Redirigiendo a completar-registro.html");
+                    window.location.href = "completar-registro.html";
+                } else {
+                    console.log("➡ Redirigiendo a inicio.html");
+                    window.location.href = "inicio.html";
+                }
+            } else {
+                alert(result.error || "❌ Error de autenticación con Google.");
+            }
+        } catch (error) {
+            console.error("❌ Error general en handleGoogleCredentialResponse:", error);
+            alert("❌ Error de red o servidor.");
+        }
+    };
+
+     //Sesion con Google
+     window.handleGoogleCredentialResponse = async function (response) {
+        const idToken = response.credential;
+
+        // Enviar al backend
+        const res = await fetch("http://localhost:3000/api/google-login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ idToken })
+        });
+
+        const result = await res.json();
+
+        if (res.ok && result.token && result.userId) {
+            localStorage.setItem("token", result.token);
+            localStorage.setItem("userId", result.userId);
+            localStorage.setItem("userName", result.name || "Usuario");
+
+            // Verificar si le faltan datos
+            if (result.needExtraData) {
+                window.location.href = "completar-registro.html"; // esta página la creas tú
+            } else {
+                window.location.href = "inicio.html";
+            }
+        } else {
+            alert(result.error || "❌ Error de autenticación con Google.");
+        }
+    };
 });
+
