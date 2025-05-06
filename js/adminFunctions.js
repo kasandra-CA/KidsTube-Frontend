@@ -24,19 +24,26 @@ async function loadRestrictedUsers() {
             const userCard = document.createElement("div");
             userCard.classList.add("col-md-3", "text-center", "mb-3");
             userCard.innerHTML = `
-                <div class="card p-2">
-                    <img src="images/avatars/${user.avatar}" class="img-fluid rounded-circle" width="80">
-                    <p class="mt-2">${user.name}</p>
-                    <button class="btn btn-warning btn-sm" onclick="editUser('${user._id}', '${user.name}', '${user.pin}', '${user.avatar}')">✏️ Editar</button>
-                    <button class="btn btn-danger btn-sm mt-1" onclick="deleteUser('${user._id}')">🗑️ Eliminar</button>
-                </div>
-            `;
+  <div class="card p-2">
+    <img src="images/avatars/${user.avatar}" class="img-fluid rounded-circle" width="80">
+    <p class="mt-2">${user.name}</p>
+    <button class="btn btn-warning btn-sm" onclick="editUser('${user._id}', '${user.name}', '${user.pin}', '${user.avatar}')">✏️ Editar</button>
+    <button class="btn btn-danger btn-sm mt-1" onclick="deleteUser('${user._id}')">🗑️ Eliminar</button>
+    <button class="btn btn-secondary btn-sm mt-1" onclick="asignarPlaylists('${user._id}')">🎞️ Asignar Videos</button>
+  </div>
+`;
+
             userList.appendChild(userCard);
         });
     } catch (error) {
         console.error("Error cargando usuarios restringidos:", error);
     }
 }
+
+function asignarPlaylists(restrictedUserId) {
+    localStorage.setItem("restrictedUserId", restrictedUserId);
+    window.location.href = "adminAssignVideos.html";
+  }
 
 function openAddUserModal() {
     currentUserId = null;

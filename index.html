@@ -1,99 +1,134 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KidsTube</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #fff3f7;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KidsTube</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #fff3f7;
+    }
 
-        .navbar-brand {
-            font-weight: bold;
-            font-size: 1.5rem;
-        }
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
 
-        .video-card {
-            border-radius: 1rem;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
-        }
+    .video-card {
+      border-radius: 1rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s;
+    }
 
-        .video-card:hover {
-            transform: scale(1.02);
-        }
+    .video-card:hover {
+      transform: scale(1.02);
+    }
 
-        .form-section {
-            border-radius: 1rem;
-            background-color: #ffffff;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-            padding: 2rem;
-        }
+    .form-section {
+      border-radius: 1rem;
+      background-color: #ffffff;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      padding: 2rem;
+    }
 
-        .form-label {
-            font-weight: 500;
-        }
+    .form-label {
+      font-weight: 500;
+    }
 
-        .btn-return {
-            margin-top: 1.5rem;
-        }
-    </style>
+    .btn-return {
+      margin-top: 1.5rem;
+    }
+  </style>
 </head>
 
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-danger shadow">
-        <div class="container">
-            <a class="navbar-brand text-white" href="#">🎬 KidsTube</a>
-        </div>
-    </nav>
-
-    <!-- Lista de videos -->
-    <div class="container mt-5">
-        <h1 class="text-center text-danger mb-4">🎥 Videos Agregados</h1>
-
-        <div class="row" id="video-list">
-            <!-- Aquí se cargarán los videos dinámicamente -->
-        </div>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-danger shadow">
+    <div class="container">
+      <a class="navbar-brand text-white" href="#">🎬 KidsTube</a>
     </div>
+  </nav>
 
-    <!-- Formulario para agregar video -->
-    <div class="container mt-5">
-        <div class="form-section">
-            <h2 class="text-danger mb-4 text-center">📤 Agregar Nuevo Video</h2>
-            <form id="video-form">
-                <div class="mb-3">
-                    <label for="name" class="form-label">🎵 Nombre del video</label>
-                    <input type="text" id="name" class="form-control" placeholder="Ej. Canción de los colores" required>
-                </div>
-                <div class="mb-3">
-                    <label for="url" class="form-label">🔗 URL de YouTube</label>
-                    <input type="text" id="url" class="form-control" placeholder="https://youtu.be/..." required>
-                </div>
-                <div class="mb-3">
-                    <label for="description" class="form-label">📝 Descripción</label>
-                    <textarea id="description" class="form-control" rows="3"
-                        placeholder="¿De qué trata el video?"></textarea>
-                </div>
-                <div class="text-center">
-                    <button type="submit" class="btn btn-danger px-4">➕ Agregar Video</button>
-                </div>
-            </form>
+  <!-- Buscador YouTube -->
+  <div class="container mt-4">
+    <div class="input-group mb-4">
+      <input type="text" id="youtubeSearchInput" class="form-control" placeholder="🔎 Buscar videos en YouTube...">
+      <button class="btn btn-outline-primary" onclick="handleYouTubeSearch()">Buscar</button>
+    </div>
+    <div class="row" id="youtubeResults"></div>
+  </div>
 
-            <!-- Botón de regresar -->
-            <div class="text-center btn-return">
-                <a href="inicio.html" class="btn btn-outline-dark">🔙 Regresar</a>
+  <!-- Lista de videos guardados -->
+  <div class="container mt-5">
+    <h1 class="text-center text-danger mb-4">🎥 Videos Agregados</h1>
+    <div class="row" id="video-list"></div>
+  </div>
+
+  <!-- Modal para editar video -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content shadow">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">🛠️ Editar Video</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editVideoForm">
+            <input type="hidden" id="editId">
+            <div class="mb-3">
+              <label for="editName" class="form-label">🎵 Nombre</label>
+              <input type="text" id="editName" class="form-control" required>
             </div>
+            <div class="mb-3">
+              <label for="editUrl" class="form-label">🔗 URL</label>
+              <input type="text" id="editUrl" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label for="editDescription" class="form-label">📝 Descripción</label>
+              <textarea id="editDescription" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="text-end">
+              <button type="submit" class="btn btn-primary">💾 Guardar Cambios</button>
+            </div>
+          </form>
         </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/functions.js"></script>
-    <script src="js/authCheck.js"></script>
+  <!-- Formulario para agregar video manual -->
+  <div class="container mt-5">
+    <div class="form-section">
+      <h2 class="text-danger mb-4 text-center">📤 Agregar Video Manualmente</h2>
+      <form id="video-form">
+        <div class="mb-3">
+          <label for="name" class="form-label">🎵 Nombre del video</label>
+          <input type="text" id="name" class="form-control" placeholder="Ej. Canción de los colores" required>
+        </div>
+        <div class="mb-3">
+          <label for="url" class="form-label">🔗 URL de YouTube</label>
+          <input type="text" id="url" class="form-control" placeholder="https://youtu.be/..." required>
+        </div>
+        <div class="mb-3">
+          <label for="description" class="form-label">📝 Descripción</label>
+          <textarea id="description" class="form-control" rows="3" placeholder="¿De qué trata el video?"></textarea>
+        </div>
+        <div class="text-center">
+          <button type="submit" class="btn btn-danger px-4">➕ Agregar Video</button>
+        </div>
+      </form>
+
+      <div class="text-center btn-return">
+        <a href="inicio.html" class="btn btn-outline-dark">🔙 Regresar</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/functions.js"></script>
+  <script src="js/authCheck.js"></script>
+  <script src="js/searchYoutube.js" type="module"></script>
 </body>
-
 </html>

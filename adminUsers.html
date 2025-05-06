@@ -112,6 +112,13 @@
     <script src="js/adminFunctions.js"></script>
     <script src="js/authCheck.js"></script>
 
+    <script>
+        function asignarPlaylists(restrictedUserId) {
+          localStorage.setItem("restrictedUserId", restrictedUserId);
+          window.location.href = "adminAssignVideos.html";
+        }
+      </script>      
+
 </body>
 
 </html>

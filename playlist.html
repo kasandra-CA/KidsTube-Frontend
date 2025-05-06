@@ -50,13 +50,19 @@
       <a href="inicio.html" class="btn btn-outline-dark">🔙 Regresar</a>
     </div>
 
+    <!-- Buscador -->
+    <div class="input-group mb-4">
+      <input type="text" id="playlistSearchInput" class="form-control" placeholder="🔍 Buscar videos en este perfil...">
+      <button class="btn btn-outline-primary" onclick="handlePlaylistSearch()">Buscar</button>
+    </div>
+
+    <!-- Playlists con videos -->
     <div id="playlistContainer" class="row g-4">
-      <!-- Aquí se insertarán las playlists con sus videos -->
+      <!-- Se insertan dinámicamente -->
     </div>
   </div>
 
   <!-- Scripts -->
-  <script src="js/authCheck.js"></script>
-  <script src="js/playlistFunctions.js"></script>
+  <script type="module" src="js/playlistFunctions.js"></script>
 </body>
 </html>
