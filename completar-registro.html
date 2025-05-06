@@ -74,12 +74,17 @@
 
   <!-- Scripts -->
   <script>
+    const params = new URLSearchParams(window.location.search);
+    const googleId = params.get("googleId");
+  
+    if (!googleId) {
+      alert("❌ No se encontró el Google ID.");
+      window.location.href = "auth.html";
+    }
+  
     document.getElementById("completeForm").addEventListener("submit", async function (e) {
       e.preventDefault();
-
-      const token = localStorage.getItem("token");
-      if (!token) return alert("No hay sesión activa.");
-
+  
       const data = {
         lastName: document.getElementById("lastName").value,
         phone: document.getElementById("phone").value,
@@ -87,29 +92,29 @@
         country: document.getElementById("country").value,
         birthdate: document.getElementById("birthdate").value
       };
-
+  
       try {
-        const res = await fetch("http://localhost:3000/api/complete-profile", {
+        const res = await fetch(`http://localhost:3000/auth/google/complete-registration/${googleId}`, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
+            "Content-Type": "application/json"
           },
           body: JSON.stringify(data)
         });
-
+  
         const result = await res.json();
-
+  
         if (res.ok) {
           alert("🎉 Registro completado con éxito.");
           window.location.href = "inicio.html";
         } else {
-          alert("❌ Error: " + (result.error || "no se pudo completar el registro."));
+          alert("❌ Error: " + (result.error || "No se pudo completar el registro."));
         }
       } catch (err) {
         alert("❌ Error inesperado.");
+        console.error(err);
       }
     });
-  </script>
+  </script>  
 </body>
 </html>

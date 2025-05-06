@@ -7,31 +7,54 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 // 🔄 Cargar playlists del usuario
+import { getPlaylistsByRestrictedUser } from "./graphqlQueries.js";
+
 async function loadPlaylists() {
+  const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
-  const res = await fetch(`${backendURL}/playlists`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  playlists = await res.json();
-  const select = document.getElementById("playlistSelector");
-  select.innerHTML = '<option value="">-- Elegir una Playlist --</option>';
-  playlists.forEach(p => {
-    const option = document.createElement("option");
-    option.value = p._id;
-    option.textContent = p.name;
-    select.appendChild(option);
-  });
+
+  if (!userId || !token) {
+    alert("⚠️ Debes iniciar sesión");
+    return;
+  }
+
+  try {
+    const data = await getPlaylistsByRestrictedUser(userId);
+    playlists = data.restrictedUserPlaylists || [];
+
+    const select = document.getElementById("playlistSelector");
+    select.innerHTML = '<option value="">-- Elegir una Playlist --</option>';
+    playlists.forEach(p => {
+      const option = document.createElement("option");
+      option.value = p._id;
+      option.textContent = p.name;
+      select.appendChild(option);
+    });
+  } catch (err) {
+    console.error("❌ Error al obtener playlists:", err);
+    alert("Error al cargar playlists con GraphQL");
+  }
 }
 
 // 📺 Cargar videos existentes del usuario
+import { getVideosByUser } from "./graphqlQueries.js";
+
 async function loadVideos() {
-  const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
-  const res = await fetch(`${backendURL}/videos?owner=${userId}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const videos = await res.json();
-  renderVideos(videos);
+  const token = localStorage.getItem("token");
+
+  if (!userId || !token) {
+    alert("⚠️ Sesión no válida");
+    return;
+  }
+
+  try {
+    const data = await getVideosByUser(userId);
+    renderVideos(data.videosByUser || []);
+  } catch (err) {
+    console.error("❌ Error al obtener videos con GraphQL:", err);
+    alert("Error al cargar videos");
+  }
 }
 
 // 🖼️ Renderizar cards de videos
